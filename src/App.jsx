@@ -46,16 +46,31 @@ const FONTS = [
   { label: 'Literata', value: "'Literata', Georgia, serif" },
   { label: 'Sans', value: "'Outfit', system-ui, sans-serif" },
 ]
-const SIZES = [
-  { label: 'S', value: 13 },
-  { label: 'M', value: 17 },
-  { label: 'L', value: 21 },
-  { label: 'XL', value: 25 },
+const FS_MIN = 13
+const FS_MAX = 25
+const FS_STEP = 2
+const LINE_HEIGHTS = [
+  { label: 'Tight', value: 'tight' },
+  { label: 'Normal', value: 'normal' },
+  { label: 'Airy', value: 'airy' },
+]
+const WIDTHS = [
+  { label: 'Narrow', value: 'narrow' },
+  { label: 'Normal', value: 'normal' },
+  { label: 'Wide', value: 'wide' },
 ]
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 const css = `
-@import url('https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,600;1,400&family=Merriweather:ital,wght@0,300;0,400;1,300;1,400&family=Outfit:wght@200;300;400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300;1,8..60,400&family=Literata:ital,opsz,wght@0,7..72,300;0,7..72,400;1,7..72,300;1,7..72,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,600;1,400&family=Merriweather:ital,wght@0,300;0,400;1,300;1,400&family=Outfit:wght@200;300;400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300;1,8..60,400&family=Literata:ital,opsz,wght@0,7..72,300;0,7..72,400;1,7..72,300;1,7..72,400&family=Noto+Serif+SC&family=Noto+Serif+TC&display=swap');
+
+[data-lh="tight"] { --rd-lh: 1.6; }
+[data-lh="normal"] { --rd-lh: 1.75; }
+[data-lh="airy"] { --rd-lh: 1.95; }
+[data-width="narrow"] { --rd-max: 600px; --rd-measure: 60ch; }
+[data-width="normal"] { --rd-max: 700px; --rd-measure: 68ch; }
+[data-width="wide"] { --rd-max: 840px; --rd-measure: 88ch; }
+[data-align="justify"] .sg-en, [data-align="justify"] .sg-zh { text-align: justify; hyphens: auto; }
 
 [data-theme="light"] {
   --bg: #ffffff; --bg2: #fafafa; --bg3: #f3f3f3;
@@ -68,16 +83,27 @@ const css = `
   --hero-grad: linear-gradient(to top, var(--bg) 0%, rgba(255,255,255,0.5) 50%, transparent 100%);
   --sel-bg: #111; --sel-fg: #fff;
 }
+[data-theme="sepia"] {
+  --bg: #f6efe2; --bg2: #f0e8d7; --bg3: #e9dfc9;
+  --border: #e2d7bd; --border2: #d3c5a4;
+  --fg: #33291a; --fg2: #4c4130; --fg3: #7c6c51; --fg4: #98876a; --fg5: #cfc2a6;
+  --hl-bg: rgba(80,60,20,0.10); --hl-border: rgba(80,60,20,0.30);
+  --inv-bg: #33291a; --inv-fg: #f6efe2;
+  --cover-filter: grayscale(80%) sepia(25%) contrast(1.02);
+  --hero-filter: grayscale(80%) sepia(25%) contrast(1.05) brightness(0.9);
+  --hero-grad: linear-gradient(to top, var(--bg) 0%, rgba(246,239,226,0.5) 50%, transparent 100%);
+  --sel-bg: #33291a; --sel-fg: #f6efe2;
+}
 [data-theme="dark"] {
-  --bg: #0a0a0a; --bg2: #111111; --bg3: #1a1a1a;
-  --border: #222222; --border2: #333333;
-  --fg: #e8e8e8; --fg2: #bbbbbb; --fg3: #888888; --fg4: #666666; --fg5: #444444;
-  --hl-bg: rgba(255,255,255,0.08); --hl-border: rgba(255,255,255,0.25);
-  --inv-bg: #eee; --inv-fg: #111;
-  --cover-filter: grayscale(100%) contrast(1.05) brightness(0.8);
-  --hero-filter: grayscale(100%) contrast(1.1) brightness(0.5);
-  --hero-grad: linear-gradient(to top, var(--bg) 0%, rgba(10,10,10,0.6) 50%, transparent 100%);
-  --sel-bg: #e8e8e8; --sel-fg: #111;
+  --bg: #1a1815; --bg2: #221f1b; --bg3: #2a2722;
+  --border: #302c27; --border2: #3e3930;
+  --fg: #f0ead6; --fg2: #d4c9b0; --fg3: #9e9082; --fg4: #6e6558; --fg5: #4a4440;
+  --hl-bg: rgba(240,234,214,0.1); --hl-border: rgba(240,234,214,0.3);
+  --inv-bg: #f0ead6; --inv-fg: #1a1815;
+  --cover-filter: grayscale(100%) contrast(1.05) brightness(0.7);
+  --hero-filter: grayscale(100%) contrast(1.1) brightness(0.45);
+  --hero-grad: linear-gradient(to top, var(--bg) 0%, rgba(26,24,21,0.6) 50%, transparent 100%);
+  --sel-bg: #f0ead6; --sel-fg: #1a1815;
 }
 *, *::before, *::after { box-sizing: border-box; }
 body {
@@ -97,7 +123,11 @@ body {
   background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
+  transition: transform 0.25s ease;
 }
+.nav.nav-hidden { transform: translateY(-100%); }
+.read-progress { position: fixed; top: 0; left: 0; width: 100%; height: 2px; background: var(--fg); transform: scaleX(0); transform-origin: 0 0; z-index: 300; pointer-events: none; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px solid var(--fg3); outline-offset: 2px; }
 .nav-brand { cursor: pointer; font-family: 'Outfit', sans-serif; font-size: 17px; font-weight: 500; letter-spacing: -0.01em; }
 .nav-brand span { font-weight: 200; color: var(--fg4); }
 .nav-r { display: flex; align-items: center; gap: 4px; }
@@ -143,11 +173,11 @@ body {
 .grid-pag-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 .grid-pag-info { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--fg4); min-width: 60px; text-align: center; }
 
-.rd { max-width: 700px; margin: 0 auto; padding: 0 40px 120px; }
+.rd { max-width: var(--rd-max, 700px); margin: 0 auto; padding: 0 40px 120px; }
 .rh { width: 100vw; margin-left: calc(-50vw + 50%); height: 380px; overflow: hidden; position: relative; background: var(--bg3); }
 .rh img { width: 100%; height: 100%; object-fit: cover; filter: var(--hero-filter); }
 .rh-ov { position: absolute; inset: 0; background: var(--hero-grad); display: flex; flex-direction: column; justify-content: flex-end; padding: 0 40px 40px; }
-.rh-in { max-width: 700px; margin: 0 auto; }
+.rh-in { max-width: var(--rd-max, 700px); margin: 0 auto; }
 .rh-y { font-family: 'Cardo', Georgia, serif; font-size: 72px; font-weight: 400; letter-spacing: -0.03em; line-height: 1; }
 .rh-s { font-family: 'Cardo', Georgia, serif; font-size: 20px; font-style: italic; color: var(--fg3); margin-top: 4px; }
 .vr { display: flex; align-items: center; gap: 10px; padding: 16px 0; margin-top: 20px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
@@ -160,6 +190,7 @@ body {
 .reader-tabs { display: flex; border-bottom: 1px solid var(--border); margin: 20px 0 0; }
 .reader-tab { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; padding: 10px 16px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--fg4); cursor: pointer; letter-spacing: 0.04em; }
 .reader-tab.on { color: var(--fg); border-bottom-color: var(--fg); }
+.reader-tab-pdf { margin-left: auto; }
 .editor-banner { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--fg4); text-transform: uppercase; padding: 12px 0; letter-spacing: 0.04em; }
 .qa-empty { text-align: center; padding: 80px 0; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 300; color: var(--fg4); }
 .yr-nav { display: flex; justify-content: space-between; align-items: center; padding: 28px 0; border-top: 1px solid var(--border); }
@@ -169,8 +200,8 @@ body {
 .sg { margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid var(--border); }
 .sg:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
 .sg-h { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-.sg-av { width: 26px; height: 26px; border-radius: 50%; background: var(--inv-bg); color: var(--inv-fg); font-family: 'IBM Plex Mono', monospace; font-size: 8px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase; }
-.sg-nm { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg3); }
+.sg-av { width: 22px; height: 22px; border-radius: 50%; background: var(--bg3); color: var(--fg3); font-family: 'IBM Plex Mono', monospace; font-size: 7.5px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase; }
+.sg-nm { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg4); }
 .sg-ord { display: flex; flex-direction: column; gap: 1px; }
 .sg-ord button { font-family: 'IBM Plex Mono', monospace; font-size: 9px; border: 1px solid var(--border); background: none; color: var(--fg4); padding: 2px 6px; cursor: pointer; line-height: 1; }
 .sg-ord button:hover:not(:disabled) { color: var(--fg); }
@@ -182,12 +213,14 @@ body {
 .sg-st { margin-left: auto; font-size: 15px; background: none; border: none; color: var(--fg5); cursor: pointer; padding: 0; }
 .sg-st:hover { color: var(--fg2); }
 .sg-st.on { color: var(--fg); }
-.sg-en { line-height: 1.85; color: var(--fg2); letter-spacing: 0.005em; white-space: pre-wrap; overflow-wrap: break-word; margin: 0; }
+.sg-en { line-height: var(--rd-lh, 1.75); color: var(--fg2); letter-spacing: 0.005em; white-space: pre-wrap; overflow-wrap: break-word; margin: 0; max-width: var(--rd-measure, 68ch); text-wrap: pretty; }
 .sg-en.ed { cursor: text; }
-.sg-zh { line-height: 1.9; color: var(--fg4); margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); white-space: pre-wrap; overflow-wrap: break-word; margin-bottom: 0; }
-.sg-hdg { border-bottom: none; margin-bottom: 24px; padding-bottom: 0; }
-.sg-hdg-inner { border-left: 2px solid var(--border2); padding-left: 12px; }
-.sg-hdg-text { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg3); margin: 0; }
+.sg-zh { font-family: 'Noto Serif TC', 'Noto Serif SC', serif; line-height: calc(var(--rd-lh, 1.75) + 0.15); color: var(--fg4); margin-top: 14px; padding-top: 14px; position: relative; white-space: pre-wrap; overflow-wrap: break-word; margin-bottom: 0; max-width: var(--rd-measure, 68ch); }
+.sg-zh::before { content: ''; position: absolute; top: 0; left: 0; width: 36px; border-top: 1px solid var(--border2); }
+.sg-hdg { border-bottom: none; margin-top: 44px; margin-bottom: 24px; padding-bottom: 0; }
+.sg-hdg:first-child { margin-top: 0; }
+.sg-hdg-inner { border-left: 2px solid var(--border2); padding-left: 14px; }
+.sg-hdg-text { font-weight: 400; letter-spacing: 0; color: var(--fg); margin: 0; line-height: 1.35; text-wrap: balance; }
 .sg-img img { width: 100%; object-fit: contain; filter: var(--cover-filter); }
 .sg-img-cap { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--fg4); letter-spacing: 0.06em; text-align: center; margin-top: 10px; }
 .hl { background: var(--hl-bg); border-bottom: 1.5px solid var(--hl-border); padding: 1px 0; }
@@ -288,6 +321,8 @@ body {
 .sp-spp { display: flex; align-items: center; gap: 10px; }
 .sp-spp input { flex: 1; font-family: 'IBM Plex Mono', monospace; font-size: 11px; padding: 6px 8px; border: 1px solid var(--border); background: var(--bg); color: var(--fg); outline: none; width: 60px; }
 .sp-spp label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--fg4); }
+.sp-stepper { align-items: center; }
+.sp-stepper-val { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--fg2); min-width: 44px; text-align: center; }
 .sp-close { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 16px; color: var(--fg4); cursor: pointer; }
 .sp-close:hover { color: var(--fg); }
 
@@ -326,6 +361,32 @@ body {
 @keyframes sr { from { transform: translateX(100%) } }
 @keyframes sl { from { transform: translateX(-100%) } }
 
+/* ── Print / PDF export ── */
+.print-root { display: none; }
+@page { margin: 20mm 18mm; }
+@media print {
+  [data-printing] #root > *:not(.print-root) { display: none !important; }
+  .nav, .scroll-top, .sp, .ix, .ep, .stb, .note-pop, .read-progress, .site-footer { display: none !important; }
+  body { background: #fff !important; color: #111 !important; }
+  .print-root { display: block; }
+  .print-title { break-after: page; page-break-after: always; padding-top: 55mm; text-align: center; }
+  .print-kicker { font-family: 'IBM Plex Mono', monospace; font-size: 9pt; letter-spacing: 0.1em; text-transform: uppercase; color: #666; margin-bottom: 18pt; }
+  .print-title h1 { font-size: 44pt; font-weight: 400; margin: 0; color: #111; }
+  .print-sub { font-size: 15pt; font-style: italic; color: #444; margin-top: 8pt; }
+  .print-date { font-family: 'IBM Plex Mono', monospace; font-size: 8pt; color: #888; margin-top: 24pt; }
+  .print-seg { break-inside: avoid; page-break-inside: avoid; margin-bottom: 14pt; }
+  .print-hdg { margin-top: 26pt; break-after: avoid; page-break-after: avoid; }
+  .print-hdg p { font-size: 15pt; color: #111; margin: 0; border-left: 2pt solid #999; padding-left: 9pt; line-height: 1.3; }
+  .print-year-hd { font-size: 20pt; color: #111; margin: 28pt 0 14pt; break-after: avoid; page-break-after: avoid; }
+  .print-speaker { font-family: 'IBM Plex Mono', monospace; font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.08em; color: #666; margin-bottom: 5pt; break-after: avoid; page-break-after: avoid; }
+  .print-en { font-size: 11.5pt; line-height: 1.6; color: #111; margin: 0; white-space: pre-wrap; overflow-wrap: break-word; orphans: 3; widows: 3; }
+  .print-zh { font-family: 'Noto Serif TC', 'Noto Serif SC', serif; font-size: 10.5pt; line-height: 1.7; color: #444; margin: 6pt 0 0; white-space: pre-wrap; overflow-wrap: break-word; orphans: 3; widows: 3; }
+  .print-img img { max-width: 100%; }
+  .print-cap { font-family: 'IBM Plex Mono', monospace; font-size: 8pt; color: #666; text-align: center; margin-top: 4pt; }
+  .print-root .hl { background: none !important; border-bottom: 1px solid #bbb; padding: 0; }
+  .print-root .note-mk { display: none !important; }
+}
+
 @media (max-width: 768px) {
   .nav { padding: 0 16px; }
   .gp, .rd, .bp { padding-left: 20px; padding-right: 20px; }
@@ -345,14 +406,29 @@ body {
 // ─── App ──────────────────────────────────────────────────────────────────────
 export default function App() {
   // ── State ──
-  const [theme, setTheme] = useState('light')
+  const [theme, setTheme] = useState(() => {
+    const v = localStorage.getItem('bk_theme')
+    return v === 'dark' || v === 'sepia' ? v : 'light'
+  })
   const [page, setPage] = useState('grid')
   const [years, setYears] = useState([])
   const [loading, setLoading] = useState(true)
   const [currentYear, setCurrentYear] = useState(null)
-  const [chineseMode, setChineseMode] = useState('none')
-  const [fontIdx, setFontIdx] = useState(0)
-  const [sizeIdx, setSizeIdx] = useState(1)
+  const [chineseMode, setChineseMode] = useState(() => {
+    const v = localStorage.getItem('bk_ch')
+    return v === 'trad' || v === 'simp' ? v : 'none'
+  })
+  const [fontIdx, setFontIdx] = useState(() => {
+    const v = parseInt(localStorage.getItem('bk_font'))
+    return v >= 0 && v < FONTS.length ? v : 0
+  })
+  const [fontSize, setFontSize] = useState(() => {
+    const v = parseInt(localStorage.getItem('bk_fs'))
+    return v >= FS_MIN && v <= FS_MAX ? v : 17
+  })
+  const [lineHeight, setLineHeight] = useState(() => localStorage.getItem('bk_lh') || 'normal')
+  const [contentWidth, setContentWidth] = useState(() => localStorage.getItem('bk_width') || 'normal')
+  const [textAlign, setTextAlign] = useState(() => localStorage.getItem('bk_align') || 'left')
   const [isEditor, setIsEditor] = useState(false)
   const [editorPanelOpen, setEditorPanelOpen] = useState(false)
   const [editorTab, setEditorTab] = useState('year')
@@ -386,6 +462,12 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [showIndex, setShowIndex] = useState(false)
   const [segmentsPerPage, setSegmentsPerPage] = useState(() => parseInt(localStorage.getItem('bk_spp') || '15'))
+  const [printJob, setPrintJob] = useState(null)
+  const progressRef = useRef(null)
+  const progressValRef = useRef(0)
+  const navRef = useRef(null)
+  const navHiddenRef = useRef(false)
+  const lastScrollYRef = useRef(0)
 
   // ── Derived values ──
   const currentYearData = years.find(y => y.year === currentYear)
@@ -417,9 +499,9 @@ export default function App() {
   // ── Effects ──
   useEffect(() => {
     fetch('/api/data')
-      .then(r => r.ok ? r.json() : { years: [] })
+      .then(r => r.ok ? r.json() : [])
       .then(data => {
-        setYears(data.years || [])
+        setYears(Array.isArray(data) ? data : (data.years || []))
         setLoading(false)
       })
       .catch(() => setLoading(false))
@@ -453,7 +535,25 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('bk_theme', theme)
   }, [theme])
+
+  // Apply & persist reading preferences
+  useEffect(() => {
+    const el = document.documentElement
+    el.setAttribute('data-lh', lineHeight)
+    el.setAttribute('data-width', contentWidth)
+    el.setAttribute('data-align', textAlign)
+    localStorage.setItem('bk_lh', lineHeight)
+    localStorage.setItem('bk_width', contentWidth)
+    localStorage.setItem('bk_align', textAlign)
+  }, [lineHeight, contentWidth, textAlign])
+
+  useEffect(() => {
+    localStorage.setItem('bk_font', String(fontIdx))
+    localStorage.setItem('bk_fs', String(fontSize))
+    localStorage.setItem('bk_ch', chineseMode)
+  }, [fontIdx, fontSize, chineseMode])
 
   // Auto-save years
   const saveYearsTimer = useRef(null)
@@ -489,12 +589,41 @@ export default function App() {
     return () => clearTimeout(saveReaderTimer.current)
   }, [highlights, sidenotes, bookmarks])
 
-  // Scroll listener
+  // Scroll listener — progress bar and nav visibility mutate DOM via refs
+  // (inner components remount on every render, so per-frame setState is off-limits)
   useEffect(() => {
-    const onScroll = () => setShowScrollTop(window.scrollY > 400)
+    const panelsOpen = showSettings || showIndex || editorPanelOpen
+    const autoHide = page === 'reader' && readingMode === 'scroll' && !panelsOpen
+    if (!autoHide) {
+      navHiddenRef.current = false
+      navRef.current?.classList.remove('nav-hidden')
+    }
+    const onScroll = () => {
+      const y = window.scrollY
+      setShowScrollTop(y > 400)
+      if (progressRef.current) {
+        const max = document.documentElement.scrollHeight - window.innerHeight
+        const p = max > 0 ? Math.min(1, Math.max(0, y / max)) : 0
+        progressValRef.current = p
+        progressRef.current.style.transform = `scaleX(${p})`
+      }
+      const goingDown = y > lastScrollYRef.current
+      lastScrollYRef.current = y
+      const hidden = autoHide && goingDown && y > 300
+      if (hidden !== navHiddenRef.current) {
+        navHiddenRef.current = hidden
+        navRef.current?.classList.toggle('nav-hidden', hidden)
+      }
+    }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+  }, [page, readingMode, showSettings, showIndex, editorPanelOpen])
+
+  // Nav remounts whenever App re-renders; re-apply ref-driven UI state after each render
+  useEffect(() => {
+    navRef.current?.classList.toggle('nav-hidden', navHiddenRef.current)
+    if (progressRef.current) progressRef.current.style.transform = `scaleX(${progressValRef.current})`
+  })
 
   // Keyboard navigation
   useEffect(() => {
@@ -530,6 +659,46 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('bk_spp', String(segmentsPerPage))
   }, [segmentsPerPage])
+
+  // Print / PDF export: show print view, wait for fonts+images, open dialog
+  useEffect(() => {
+    if (!printJob) return
+    let cancelled = false
+    let done = false
+    const prevTitle = document.title
+    const root = document.documentElement
+    root.setAttribute('data-printing', '1')
+    document.title = printJob.scope === 'bookmarks'
+      ? 'Berkshire — Saved Passages'
+      : `Berkshire ${currentYear} — ${printJob.scope === 'qa' ? 'Q&A' : 'Transcript'}`
+    const cleanup = () => {
+      if (done) return
+      done = true
+      root.removeAttribute('data-printing')
+      document.title = prevTitle
+      setPrintJob(null)
+    }
+    window.addEventListener('afterprint', cleanup)
+    const imgs = [...document.querySelectorAll('.print-root img')]
+    const waits = imgs.map(img => img.complete
+      ? Promise.resolve()
+      : new Promise(res => { img.onload = img.onerror = res }))
+    if (document.fonts?.ready) waits.push(document.fonts.ready)
+    Promise.race([Promise.all(waits), new Promise(res => setTimeout(res, 3000))]).then(() => {
+      if (cancelled) return
+      window.print()
+      // Chrome blocks until the dialog closes; Safari returns early and fires afterprint
+      setTimeout(cleanup, 500)
+    })
+    return () => {
+      cancelled = true
+      window.removeEventListener('afterprint', cleanup)
+      if (!done) {
+        root.removeAttribute('data-printing')
+        document.title = prevTitle
+      }
+    }
+  }, [printJob])
 
   // Scroll to top on page change
   useEffect(() => {
@@ -732,7 +901,7 @@ export default function App() {
   // ── renderSegment ──
   function renderSegment(seg, index, allSegs) {
     const isBookmarked = bookmarks.has(seg.id)
-    const fontStyle = { fontFamily: FONTS[fontIdx].value, fontSize: SIZES[sizeIdx].value }
+    const fontStyle = { fontFamily: FONTS[fontIdx].value, fontSize }
 
     if (seg.type === 'heading') {
       return (
@@ -751,7 +920,7 @@ export default function App() {
                 <button className="sg-del" onClick={() => deleteSegment(seg.id)}>✕</button>
               </div>
             )}
-            <p className="sg-hdg-text">{seg.text}</p>
+            <p className="sg-hdg-text" style={{ ...fontStyle, fontSize: Math.round(fontSize * 1.3) }}>{seg.text}</p>
           </div>
         </div>
       )
@@ -772,7 +941,7 @@ export default function App() {
     }
 
     const bg = avatarBg(seg.speaker)
-    const avStyle = bg ? { background: bg } : {}
+    const avStyle = bg ? { background: bg, color: '#fff' } : {}
 
     return (
       <div key={seg.id} className="sg" onMouseUp={e => handleMouseUp(e, seg.id)}>
@@ -798,7 +967,7 @@ export default function App() {
           {renderText(seg.en, seg.id, 'en', highlights, sidenotes, chineseMode)}
         </p>
         {seg.zh && chineseMode !== 'none' && (
-          <p className="sg-zh" style={{ ...fontStyle, fontSize: SIZES[sizeIdx].value - 1 }}>
+          <p className="sg-zh" style={{ fontSize: fontSize - 1 }}>
             {renderText(seg.zh, seg.id, 'zh', highlights, sidenotes, chineseMode)}
           </p>
         )}
@@ -892,7 +1061,11 @@ export default function App() {
       .catch(() => { setSaveStatus('error'); setTimeout(() => setSaveStatus('idle'), 3000) })
   }
 
-  // ── Export bookmarks ──
+  // ── Export ──
+  function openPrint(scope) {
+    setPrintJob({ scope })
+  }
+
   function exportBookmarks() {
     const items = []
     years.forEach(y => {
@@ -935,16 +1108,16 @@ ${items.map(({ year, seg }) => `
     const chLabel = chineseMode === 'trad' ? '繁中' : chineseMode === 'simp' ? '简中' : '中'
     const saveLabel = saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? '✓ Saved' : saveStatus === 'error' ? 'Err' : 'Save'
     return (
-      <nav className="nav">
+      <nav className="nav" ref={navRef}>
         <div className="nav-brand" onClick={goToGrid}>
           Berkshire <span>Letters</span>
         </div>
         <div className="nav-r">
-          <button className="nb" onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')}>
-            {theme === 'light' ? '●' : '○'}
+          <button className="nb" onClick={() => setTheme(t => t === 'light' ? 'sepia' : t === 'sepia' ? 'dark' : 'light')}>
+            {theme === 'light' ? '●' : theme === 'sepia' ? '◐' : '○'}
           </button>
           <button className={`nb${bookmarks.size > 0 ? ' on' : ''}`} onClick={() => { setPage('bookmarks'); window.history.pushState({ page: 'bookmarks' }, '') }}>
-            ★ Saved
+            ★
           </button>
           {page === 'reader' && (
             <>
@@ -954,11 +1127,11 @@ ${items.map(({ year, seg }) => `
               <button className="nb" onClick={() => setChineseMode(m => m === 'none' ? 'trad' : m === 'trad' ? 'simp' : 'none')}>
                 {chLabel}
               </button>
-              <button className={`nb${showSettings ? ' on' : ''}`} onClick={() => { setShowSettings(v => !v); setShowIndex(false); setEditorPanelOpen(false) }}>
-                ⚙ Settings
-              </button>
             </>
           )}
+          <button className={`nb${showSettings ? ' on' : ''}`} onClick={() => { setShowSettings(v => !v); setShowIndex(false); setEditorPanelOpen(false) }}>
+            Aa
+          </button>
           {isEditor && page === 'reader' && (
             <button className={`nb${editorPanelOpen ? ' on' : ''}`} onClick={() => { setEditorPanelOpen(v => !v); setShowSettings(false); setShowIndex(false) }}>
               {editorPanelOpen ? 'Close' : '+ Edit'}
@@ -973,7 +1146,7 @@ ${items.map(({ year, seg }) => `
             </>
           )}
           {!isEditor && (
-            <button className="nb" onClick={() => { setPage('login'); window.history.pushState({ page: 'login' }, '') }}>♝</button>
+            <button className="nb" style={{ fontSize: 18, letterSpacing: 0, padding: '4px 10px' }} onClick={() => { setPage('login'); window.history.pushState({ page: 'login' }, '') }}>♝</button>
           )}
         </div>
       </nav>
@@ -985,8 +1158,7 @@ ${items.map(({ year, seg }) => `
       <div className="gp">
         <div className="gp-hdr">
           <div>
-            <h1>Annual Meetings</h1>
-            <p className="gp-d">Berkshire Hathaway shareholder letters archive</p>
+            <p className="gp-d">Annual Shareholders Meeting Transcripts, 1994–2026</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <span className="gp-count">{years.length} years</span>
@@ -1003,7 +1175,7 @@ ${items.map(({ year, seg }) => `
               )}
               <div className="yc" onClick={() => goToReader(y.year)}>
                 <div className="yc-i">
-                  {y.coverUrl ? <img src={y.coverUrl} alt={String(y.year)} style={y.coverPos ? { objectPosition: `center ${y.coverPos}%` } : {}} /> : null}
+                  {y.cover ? <img src={y.cover} alt={String(y.year)} style={y.coverPos ? { objectPosition: `center ${y.coverPos}%` } : {}} /> : null}
                 </div>
                 <div className="yc-b">
                   <div className="yc-y">{y.year}</div>
@@ -1076,6 +1248,7 @@ ${items.map(({ year, seg }) => `
         <div className="reader-tabs">
           <button className={`reader-tab${readerTab === 'transcript' ? ' on' : ''}`} onClick={() => setReaderTab('transcript')}>Transcript</button>
           <button className={`reader-tab${readerTab === 'qa' ? ' on' : ''}`} onClick={() => setReaderTab('qa')}>Q&A</button>
+          <button className="reader-tab reader-tab-pdf" onClick={() => openPrint(readerTab === 'qa' ? 'qa' : 'transcript')}>PDF ↓</button>
         </div>
         {isEditor && <div className="editor-banner">Editor mode — {(currentYearData?.segments || []).length} total segments</div>}
         <div style={{ paddingTop: 24 }}>
@@ -1098,12 +1271,13 @@ ${items.map(({ year, seg }) => `
     const allSegs = currentYearData?.segments || []
     return (
       <div className="rd" style={{ maxWidth: '100%', padding: 0 }}>
-        <div style={{ maxWidth: 700, margin: '0 auto', padding: '0 40px' }}>
+        <div style={{ maxWidth: 'var(--rd-max, 700px)', margin: '0 auto', padding: '0 40px' }}>
           <button className="bbk" onClick={goToGrid}>← All Years</button>
           <ReaderHero />
           <div className="reader-tabs">
             <button className={`reader-tab${readerTab === 'transcript' ? ' on' : ''}`} onClick={() => setReaderTab('transcript')}>Transcript</button>
             <button className={`reader-tab${readerTab === 'qa' ? ' on' : ''}`} onClick={() => setReaderTab('qa')}>Q&A</button>
+            <button className="reader-tab reader-tab-pdf" onClick={() => openPrint(readerTab === 'qa' ? 'qa' : 'transcript')}>PDF ↓</button>
           </div>
           {isEditor && <div className="editor-banner">Editor mode — {(currentYearData?.segments || []).length} total segments</div>}
         </div>
@@ -1137,7 +1311,7 @@ ${items.map(({ year, seg }) => `
             <button className="book-nav-btn" disabled={readerPage >= totalReaderPages - 1} onClick={nextPage}>Next Spread →</button>
           </div>
         </div>
-        <div style={{ maxWidth: 700, margin: '0 auto', padding: '0 40px' }}>
+        <div style={{ maxWidth: 'var(--rd-max, 700px)', margin: '0 auto', padding: '0 40px' }}>
           <YearNav />
         </div>
       </div>
@@ -1194,7 +1368,10 @@ ${items.map(({ year, seg }) => `
         <div className="bp-hdr">
           <h2>Saved Passages</h2>
           {savedItems.length > 0 && (
-            <button className="btn" onClick={exportBookmarks}>Export .doc</button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn" onClick={() => openPrint('bookmarks')}>Export PDF</button>
+              <button className="btn" onClick={exportBookmarks}>Export .doc</button>
+            </div>
           )}
         </div>
         {savedItems.length === 0 ? (
@@ -1209,6 +1386,82 @@ ${items.map(({ year, seg }) => `
             </div>
           ))
         )}
+      </div>
+    )
+  }
+
+  function PrintView() {
+    const scope = printJob.scope
+    const fontFamily = FONTS[fontIdx].value
+    const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+
+    function printSegment(seg) {
+      if (seg.type === 'heading') {
+        return (
+          <div key={seg.id} className="print-seg print-hdg">
+            <p style={{ fontFamily }}>{seg.text}</p>
+          </div>
+        )
+      }
+      if (seg.type === 'image') {
+        return (
+          <div key={seg.id} className="print-seg print-img">
+            {seg.url && <img src={seg.url} alt={seg.caption || ''} />}
+            {seg.caption && <p className="print-cap">{seg.caption}</p>}
+          </div>
+        )
+      }
+      return (
+        <div key={seg.id} className="print-seg">
+          <div className="print-speaker">{seg.speaker || 'Speaker'}</div>
+          <p className="print-en" style={{ fontFamily }}>
+            {renderText(seg.en, seg.id, 'en', highlights, sidenotes, chineseMode)}
+          </p>
+          {seg.zh && chineseMode !== 'none' && (
+            <p className="print-zh">
+              {renderText(seg.zh, seg.id, 'zh', highlights, sidenotes, chineseMode)}
+            </p>
+          )}
+        </div>
+      )
+    }
+
+    if (scope === 'bookmarks') {
+      const groups = []
+      ;[...years].sort((a, b) => a.year - b.year).forEach(y => {
+        const segs = (y.segments || []).filter(s => bookmarks.has(s.id))
+        if (segs.length > 0) groups.push({ year: y.year, title: y.title, segs })
+      })
+      return (
+        <div className="print-root">
+          <div className="print-title">
+            <div className="print-kicker">Berkshire Hathaway Annual Shareholders Meeting</div>
+            <h1 style={{ fontFamily }}>Saved Passages</h1>
+            <div className="print-date">{dateStr}</div>
+          </div>
+          {groups.map(g => (
+            <div key={g.year}>
+              <div className="print-year-hd" style={{ fontFamily }}>{g.year}{g.title ? ` — ${g.title}` : ''}</div>
+              {g.segs.map(printSegment)}
+            </div>
+          ))}
+        </div>
+      )
+    }
+
+    const yd = currentYearData
+    const segs = scope === 'qa'
+      ? (yd?.segments || []).filter(s => s.isQA)
+      : (yd?.segments || [])
+    return (
+      <div className="print-root">
+        <div className="print-title">
+          <div className="print-kicker">Berkshire Hathaway Annual Shareholders Meeting — {scope === 'qa' ? 'Q&A' : 'Transcript'}</div>
+          <h1 style={{ fontFamily }}>{currentYear}</h1>
+          {yd?.title && <div className="print-sub" style={{ fontFamily }}>{yd.title}</div>}
+          <div className="print-date">{dateStr}</div>
+        </div>
+        {segs.map(printSegment)}
       </div>
     )
   }
@@ -1237,10 +1490,45 @@ ${items.map(({ year, seg }) => `
 
         <div className="sp-section">
           <h4>Size</h4>
+          <div className="sp-row sp-stepper">
+            <button className="sp-btn" disabled={fontSize <= FS_MIN} onClick={() => setFontSize(s => Math.max(FS_MIN, s - FS_STEP))}>A−</button>
+            <span className="sp-stepper-val">{fontSize}px</span>
+            <button className="sp-btn" disabled={fontSize >= FS_MAX} onClick={() => setFontSize(s => Math.min(FS_MAX, s + FS_STEP))}>A+</button>
+          </div>
+        </div>
+
+        <div className="sp-section">
+          <h4>Line Height</h4>
           <div className="sp-row">
-            {SIZES.map((s, i) => (
-              <button key={s.label} className={`sp-btn${sizeIdx === i ? ' on' : ''}`} onClick={() => setSizeIdx(i)}>{s.label}</button>
+            {LINE_HEIGHTS.map(lh => (
+              <button key={lh.value} className={`sp-btn${lineHeight === lh.value ? ' on' : ''}`} onClick={() => setLineHeight(lh.value)}>{lh.label}</button>
             ))}
+          </div>
+        </div>
+
+        <div className="sp-section">
+          <h4>Width</h4>
+          <div className="sp-row">
+            {WIDTHS.map(w => (
+              <button key={w.value} className={`sp-btn${contentWidth === w.value ? ' on' : ''}`} onClick={() => setContentWidth(w.value)}>{w.label}</button>
+            ))}
+          </div>
+        </div>
+
+        <div className="sp-section">
+          <h4>Align</h4>
+          <div className="sp-row">
+            <button className={`sp-btn${textAlign === 'left' ? ' on' : ''}`} onClick={() => setTextAlign('left')}>Left</button>
+            <button className={`sp-btn${textAlign === 'justify' ? ' on' : ''}`} onClick={() => setTextAlign('justify')}>Justify</button>
+          </div>
+        </div>
+
+        <div className="sp-section">
+          <h4>Theme</h4>
+          <div className="sp-row">
+            <button className={`sp-btn${theme === 'light' ? ' on' : ''}`} onClick={() => setTheme('light')}>Light</button>
+            <button className={`sp-btn${theme === 'sepia' ? ' on' : ''}`} onClick={() => setTheme('sepia')}>Sepia</button>
+            <button className={`sp-btn${theme === 'dark' ? ' on' : ''}`} onClick={() => setTheme('dark')}>Dark</button>
           </div>
         </div>
 
@@ -1591,6 +1879,7 @@ ${items.map(({ year, seg }) => `
       {!loading && (
         <>
           <Nav />
+          {page === 'reader' && readingMode === 'scroll' && <div className="read-progress" ref={progressRef} />}
           {page === 'grid' && <GridPage />}
           {page === 'reader' && readingMode === 'scroll' && <ReaderScrollPage />}
           {page === 'reader' && readingMode === 'book' && <ReaderBookPage />}
@@ -1609,6 +1898,7 @@ ${items.map(({ year, seg }) => `
           {addYearModalOpen && <AddYearModal />}
           {editingSegment && <EditSegmentModal />}
           {reportModalOpen && <ReportModal />}
+          {printJob && <PrintView />}
         </>
       )}
     </>

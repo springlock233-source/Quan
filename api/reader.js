@@ -1,4 +1,17 @@
-import { kv } from '@vercel/kv'
+import { MongoClient } from 'mongodb'
+
+const uri = process.env.MONGODB_URI
+const dbName = process.env.MONGODB_DB
+
+let cachedClient = null
+
+async function getDb() {
+  if (!cachedClient) {
+    cachedClient = new MongoClient(uri)
+    await cachedClient.connect()
+  }
+  return cachedClient.db(dbName)
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -9,17 +22,28 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      const reader = await kv.get('reader')
-      return res.status(200).json(reader || { hls: {}, notes: {}, bms: [] })
+      const db = await getDb()
+      const doc = await db.collection('content').findOne({ _id: 'reader' })
+      // legacy fallback: earlier versions stored hls/notes/bms
+      return res.status(200).json({
+        highlights: doc?.highlights || doc?.hls || {},
+        sidenotes: doc?.sidenotes || doc?.notes || {},
+        bookmarks: doc?.bookmarks || doc?.bms || []
+      })
     } catch (e) {
-      return res.status(200).json({ hls: {}, notes: {}, bms: [] })
+      return res.status(200).json({ highlights: {}, sidenotes: {}, bookmarks: [] })
     }
   }
 
   if (req.method === 'POST') {
     try {
-      const { hls, notes, bms } = req.body || {}
-      await kv.set('reader', { hls: hls || {}, notes: notes || {}, bms: bms || [] })
+      const { highlights, sidenotes, bookmarks } = req.body || {}
+      const db = await getDb()
+      await db.collection('content').updateOne(
+        { _id: 'reader' },
+        { $set: { highlights: highlights || {}, sidenotes: sidenotes || {}, bookmarks: bookmarks || [] } },
+        { upsert: true }
+      )
       return res.status(200).json({ ok: true })
     } catch (e) {
       return res.status(500).json({ error: 'Storage error' })

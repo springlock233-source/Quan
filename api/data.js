@@ -1,6 +1,18 @@
-import { kv } from '@vercel/kv'
+import { MongoClient } from 'mongodb'
 
-const PASS = process.env.EDITOR_PASSWORD
+const PASS = process.env.EDITOR_PW
+const uri = process.env.MONGODB_URI
+const dbName = process.env.MONGODB_DB
+
+let cachedClient = null
+
+async function getDb() {
+  if (!cachedClient) {
+    cachedClient = new MongoClient(uri)
+    await cachedClient.connect()
+  }
+  return cachedClient.db(dbName)
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -11,8 +23,9 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      const years = await kv.get('years')
-      return res.status(200).json(years || [])
+      const db = await getDb()
+      const doc = await db.collection('content').findOne({ _id: 'main' })
+      return res.status(200).json(doc?.years || [])
     } catch (e) {
       return res.status(500).json({ error: 'Storage error' })
     }
@@ -25,7 +38,12 @@ export default async function handler(req, res) {
     }
     if (verify) return res.status(200).json({ ok: true })
     try {
-      await kv.set('years', years)
+      const db = await getDb()
+      await db.collection('content').updateOne(
+        { _id: 'main' },
+        { $set: { years } },
+        { upsert: true }
+      )
       return res.status(200).json({ ok: true })
     } catch (e) {
       return res.status(500).json({ error: 'Storage error' })
