@@ -1,31 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
-// ─── Chinese conversion ───────────────────────────────────────────────────────
-const ZH_DICT = {
-  '伯克希爾': '伯克希尔', '股東': '股东', '哈薩威': '哈萨威', '波克夏': '波克夏',
-  '巴菲特': '巴菲特', '查理': '查理', '芒格': '芒格', '公司': '公司',
-  '業務': '业务', '資本': '资本', '長期': '长期', '價值': '价值',
-  '投資': '投资', '市場': '市场', '收益': '收益', '管理': '管理',
-  '股份': '股份', '董事': '董事',
-}
-const ZH_MAP = {
-  '來': '来', '個': '个', '說': '说', '會': '会', '國': '国', '時': '时',
-  '從': '从', '們': '们', '與': '与', '對': '对', '這': '这', '為': '为',
-  '發': '发', '裡': '里', '當': '当', '開': '开', '後': '后', '過': '过',
-  '還': '还', '讓': '让', '關': '关', '現': '现', '實': '实', '問': '问',
-  '網': '网', '點': '点', '數': '数', '種': '种', '進': '进', '間': '间',
-  '書': '书', '東': '东', '機': '机', '長': '长', '義': '义', '術': '术',
-  '業': '业', '務': '务', '學': '学', '體': '体',
-}
-function zhConvert(text) {
-  if (!text) return text
-  let result = text
-  for (const [trad, simp] of Object.entries(ZH_DICT)) {
-    result = result.split(trad).join(simp)
-  }
-  return result.split('').map(ch => ZH_MAP[ch] || ch).join('')
-}
-
 // ─── Avatar helpers ───────────────────────────────────────────────────────────
 function avatarBg(speaker) {
   if (speaker === 'Warren Buffett') return '#0d2040'
@@ -67,9 +41,9 @@ const css = `
 [data-lh="tight"] { --rd-lh: 1.6; }
 [data-lh="normal"] { --rd-lh: 1.75; }
 [data-lh="airy"] { --rd-lh: 1.95; }
-[data-width="narrow"] { --rd-max: 600px; --rd-measure: 60ch; }
-[data-width="normal"] { --rd-max: 700px; --rd-measure: 68ch; }
-[data-width="wide"] { --rd-max: 840px; --rd-measure: 88ch; }
+[data-width="narrow"] { --rd-max: 600px; --rd-measure: 32rem; }
+[data-width="normal"] { --rd-max: 700px; --rd-measure: 36rem; }
+[data-width="wide"] { --rd-max: 840px; --rd-measure: 47rem; }
 [data-align="justify"] .sg-en, [data-align="justify"] .sg-zh { text-align: justify; hyphens: auto; }
 
 [data-theme="light"] {
@@ -204,8 +178,8 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 .yr-nb { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; padding: 9px 0; border: none; background: none; color: var(--fg4); cursor: pointer; letter-spacing: 0.04em; transition: color 0.15s; }
 .yr-nb:hover { color: var(--fg); }
 
-.sg { margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid var(--border); }
-.sg:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.sg { margin-bottom: 44px; }
+.sg:last-child { margin-bottom: 0; }
 .sg-h { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .sg-guest .sg-h { justify-content: flex-end; }
 .sg-guest .sg-st { margin-left: 0; }
@@ -222,9 +196,9 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 .sg-st { margin-left: auto; font-size: 15px; background: none; border: none; color: var(--fg5); cursor: pointer; padding: 0; }
 .sg-st:hover { color: var(--fg2); }
 .sg-st.on { color: var(--fg); }
-.sg-en { line-height: var(--rd-lh, 1.75); color: var(--fg2); letter-spacing: 0.005em; white-space: pre-wrap; overflow-wrap: break-word; margin: 0; max-width: var(--rd-measure, 68ch); text-wrap: pretty; }
+.sg-en { line-height: var(--rd-lh, 1.75); color: var(--fg2); letter-spacing: 0.005em; white-space: pre-wrap; overflow-wrap: break-word; margin: 0; max-width: var(--rd-measure, 36rem); text-wrap: pretty; }
 .sg-en.ed { cursor: text; }
-.sg-zh { font-family: 'Noto Serif TC', 'Noto Serif SC', serif; line-height: calc(var(--rd-lh, 1.75) + 0.15); color: var(--fg4); margin-top: 14px; padding-top: 14px; position: relative; white-space: pre-wrap; overflow-wrap: break-word; margin-bottom: 0; max-width: var(--rd-measure, 68ch); }
+.sg-zh { font-family: 'Noto Serif TC', 'Noto Serif SC', serif; line-height: calc(var(--rd-lh, 1.75) + 0.15); color: var(--fg4); margin-top: 14px; padding-top: 14px; position: relative; white-space: pre-wrap; overflow-wrap: break-word; margin-bottom: 0; max-width: var(--rd-measure, 36rem); }
 .sg-zh::before { content: ''; position: absolute; top: 0; left: 0; width: 36px; border-top: 1px solid var(--border2); }
 .sg-hdg { border-bottom: none; margin-top: 44px; margin-bottom: 24px; padding-bottom: 0; }
 .sg-hdg:first-child { margin-top: 0; }
@@ -412,7 +386,7 @@ export default function App() {
   const [currentYear, setCurrentYear] = useState(null)
   const [chineseMode, setChineseMode] = useState(() => {
     const v = localStorage.getItem('bk_ch')
-    return v === 'trad' || v === 'simp' ? v : 'none'
+    return v === 'trad' || v === 'simp' ? 'trad' : 'none'
   })
   const [fontIdx, setFontIdx] = useState(() => {
     const v = parseInt(localStorage.getItem('bk_font'))
@@ -828,10 +802,9 @@ export default function App() {
   }
 
   // ── renderText ──
-  function renderText(text, segId, lang, hls, notes, chMode) {
+  function renderText(text, segId, hls, notes) {
     if (!text) return null
-    let displayText = text
-    if (lang === 'zh' && chMode === 'simp') displayText = zhConvert(text)
+    const displayText = text
 
     const segHls = hls[segId] || []
     const segNotes = notes[segId] || []
@@ -957,11 +930,11 @@ export default function App() {
           </button>
         </div>
         <p className="sg-en" style={fontStyle}>
-          {renderText(seg.en, seg.id, 'en', highlights, sidenotes, chineseMode)}
+          {renderText(seg.en, seg.id, highlights, sidenotes)}
         </p>
         {seg.zh && chineseMode !== 'none' && (
           <p className="sg-zh" style={{ fontSize: fontSize - 1 }}>
-            {renderText(seg.zh, seg.id, 'zh', highlights, sidenotes, chineseMode)}
+            {renderText(seg.zh, seg.id, highlights, sidenotes)}
           </p>
         )}
       </div>
@@ -1098,7 +1071,7 @@ ${items.map(({ year, seg }) => `
   }
 
   function Nav() {
-    const chLabel = chineseMode === 'trad' ? '繁中' : chineseMode === 'simp' ? '简中' : '中'
+    const chLabel = chineseMode === 'trad' ? '繁中' : '中'
     const saveLabel = saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? '✓ Saved' : saveStatus === 'error' ? 'Err' : 'Save'
     return (
       <nav className="nav" ref={navRef}>
@@ -1113,7 +1086,7 @@ ${items.map(({ year, seg }) => `
             ★
           </button>
           {page === 'reader' && (
-            <button className="nb" onClick={() => setChineseMode(m => m === 'none' ? 'trad' : m === 'trad' ? 'simp' : 'none')}>
+            <button className="nb" onClick={() => setChineseMode(m => m === 'none' ? 'trad' : 'none')}>
               {chLabel}
             </button>
           )}
@@ -1238,14 +1211,14 @@ ${items.map(({ year, seg }) => `
     return (
       <div className="rd">
         <button className="bbk" onClick={goToGrid}>← All Years</button>
-        <ReaderHero />
+        {ReaderHero()}
         <div className="reader-tabs">
           <button className={`reader-tab${readerTab === 'transcript' ? ' on' : ''}`} onClick={() => setReaderTab('transcript')}>Transcript</button>
           <button className={`reader-tab${readerTab === 'qa' ? ' on' : ''}`} onClick={() => setReaderTab('qa')}>Q&A</button>
           <button className="reader-tab reader-tab-pdf" onClick={() => openPrint(readerTab === 'qa' ? 'qa' : 'transcript')}>PDF ↓</button>
         </div>
         {isEditor && <div className="editor-banner">Editor mode — {(currentYearData?.segments || []).length} total segments</div>}
-        <QAIndex />
+        {QAIndex()}
         <div style={{ paddingTop: 24 }}>
           {pageSegments.length === 0 && (
             <div className="qa-empty">No content for this section.</div>
@@ -1257,7 +1230,7 @@ ${items.map(({ year, seg }) => `
           <span className="pnav-info">Page {readerPage + 1} of {totalReaderPages}</span>
           <button className="pnav-btn" disabled={readerPage >= totalReaderPages - 1} onClick={nextPage}>Next →</button>
         </div>
-        <YearNav />
+        {YearNav()}
       </div>
     )
   }
@@ -1268,14 +1241,14 @@ ${items.map(({ year, seg }) => `
       <div className="rd" style={{ maxWidth: '100%', padding: 0 }}>
         <div style={{ maxWidth: 'var(--rd-max, 700px)', margin: '0 auto', padding: '0 40px' }}>
           <button className="bbk" onClick={goToGrid}>← All Years</button>
-          <ReaderHero />
+          {ReaderHero()}
           <div className="reader-tabs">
             <button className={`reader-tab${readerTab === 'transcript' ? ' on' : ''}`} onClick={() => setReaderTab('transcript')}>Transcript</button>
             <button className={`reader-tab${readerTab === 'qa' ? ' on' : ''}`} onClick={() => setReaderTab('qa')}>Q&A</button>
             <button className="reader-tab reader-tab-pdf" onClick={() => openPrint(readerTab === 'qa' ? 'qa' : 'transcript')}>PDF ↓</button>
           </div>
           {isEditor && <div className="editor-banner">Editor mode — {(currentYearData?.segments || []).length} total segments</div>}
-          <QAIndex />
+          {QAIndex()}
         </div>
         <div className="book-wrap">
           <div className="book-spread">
@@ -1306,7 +1279,7 @@ ${items.map(({ year, seg }) => `
           </div>
         </div>
         <div style={{ maxWidth: 'var(--rd-max, 700px)', margin: '0 auto', padding: '0 40px' }}>
-          <YearNav />
+          {YearNav()}
         </div>
       </div>
     )
@@ -1409,11 +1382,11 @@ ${items.map(({ year, seg }) => `
         <div key={seg.id} className="print-seg">
           <div className="print-speaker">{seg.speaker || 'Speaker'}</div>
           <p className="print-en" style={{ fontFamily }}>
-            {renderText(seg.en, seg.id, 'en', highlights, sidenotes, chineseMode)}
+            {renderText(seg.en, seg.id, highlights, sidenotes)}
           </p>
           {seg.zh && chineseMode !== 'none' && (
             <p className="print-zh">
-              {renderText(seg.zh, seg.id, 'zh', highlights, sidenotes, chineseMode)}
+              {renderText(seg.zh, seg.id, highlights, sidenotes)}
             </p>
           )}
         </div>
@@ -1533,7 +1506,6 @@ ${items.map(({ year, seg }) => `
           <div className="sp-row">
             <button className={`sp-btn${chineseMode === 'none' ? ' on' : ''}`} onClick={() => setChineseMode('none')}>Off</button>
             <button className={`sp-btn${chineseMode === 'trad' ? ' on' : ''}`} onClick={() => setChineseMode('trad')}>繁體</button>
-            <button className={`sp-btn${chineseMode === 'simp' ? ' on' : ''}`} onClick={() => setChineseMode('simp')}>简体</button>
           </div>
         </div>
 
@@ -1861,29 +1833,29 @@ ${items.map(({ year, seg }) => `
   return (
     <>
       <style>{css}</style>
-      {loading && <LoadingScreen />}
+      {loading && LoadingScreen()}
       {!loading && (
         <>
-          <Nav />
+          {Nav()}
           {page === 'reader' && readingMode === 'scroll' && <div className="read-progress" ref={progressRef} />}
-          {page === 'grid' && <GridPage />}
-          {page === 'reader' && readingMode === 'scroll' && <ReaderScrollPage />}
-          {page === 'reader' && readingMode === 'book' && <ReaderBookPage />}
-          {page === 'login' && <LoginPage />}
-          {page === 'bookmarks' && <BookmarksPage />}
-          {showSettings && page === 'reader' && <SettingsPanel />}
-          {isEditor && editorPanelOpen && page === 'reader' && <EditorPanel />}
-          <SiteFooter />
+          {page === 'grid' && GridPage()}
+          {page === 'reader' && readingMode === 'scroll' && ReaderScrollPage()}
+          {page === 'reader' && readingMode === 'book' && ReaderBookPage()}
+          {page === 'login' && LoginPage()}
+          {page === 'bookmarks' && BookmarksPage()}
+          {showSettings && page === 'reader' && SettingsPanel()}
+          {isEditor && editorPanelOpen && page === 'reader' && EditorPanel()}
+          {SiteFooter()}
           {showScrollTop && page === 'reader' && readingMode === 'scroll' && (
             <button className="scroll-top" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>♠</button>
           )}
-          {selToolbar && <SelectionToolbar />}
-          {sidenoteModal && <SidenoteModal />}
-          {sidenotePopover && <SidenotePopover />}
-          {addYearModalOpen && <AddYearModal />}
-          {editingSegment && <EditSegmentModal />}
-          {reportModalOpen && <ReportModal />}
-          {printJob && <PrintView />}
+          {selToolbar && SelectionToolbar()}
+          {sidenoteModal && SidenoteModal()}
+          {sidenotePopover && SidenotePopover()}
+          {addYearModalOpen && AddYearModal()}
+          {editingSegment && EditSegmentModal()}
+          {reportModalOpen && ReportModal()}
+          {printJob && PrintView()}
         </>
       )}
     </>
