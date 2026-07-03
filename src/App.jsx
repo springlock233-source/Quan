@@ -144,12 +144,16 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 .nb.inv:hover { opacity: 0.85; }
 
 .gp { max-width: 920px; margin: 0 auto; padding: 48px 40px 120px; }
-.gp-hdr { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 44px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.gp-hdr { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 44px; }
 .gp-hdr h1 { font-family: 'Cardo', Georgia, serif; font-size: 36px; font-weight: 400; margin: 0; }
 .gp-d { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 300; color: var(--fg3); margin: 0; }
 .gp-count { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--fg4); text-transform: uppercase; }
-.sort-btn { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--fg4); padding: 0 4px; line-height: 1; }
-.sort-btn:hover { color: var(--fg); }
+.sort-btn { font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; background: none; border: 1px solid var(--border); color: var(--fg4); padding: 6px 12px; cursor: pointer; line-height: 1; transition: color 0.15s, border-color 0.15s; }
+.sort-btn:hover { color: var(--fg); border-color: var(--border2); }
+.nb-star { font-size: 14px; padding: 3px 10px; line-height: 1; }
+.yc-soon { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 200px; padding: 48px 24px; background: var(--bg); }
+.yc-soon-t { font-family: 'Cardo', Georgia, serif; font-size: 17px; font-style: italic; color: var(--fg3); }
+.yc-soon-s { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.08em; color: var(--fg4); text-transform: uppercase; }
 .gr { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
 .yc-wrap { position: relative; background: var(--bg); }
 .yc-del { position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 12px; cursor: pointer; opacity: 0; transition: opacity 0.15s; background: var(--bg); border: 1px solid var(--border); color: var(--fg3); z-index: 2; }
@@ -174,17 +178,20 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 .grid-pag-info { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--fg4); min-width: 60px; text-align: center; }
 
 .rd { max-width: var(--rd-max, 700px); margin: 0 auto; padding: 0 40px 120px; }
-.rh { width: 100vw; margin-left: calc(-50vw + 50%); height: 380px; overflow: hidden; position: relative; background: var(--bg3); }
+.rh { width: 100vw; margin-left: calc(-50vw + 50%); height: 280px; overflow: hidden; position: relative; background: var(--bg3); }
 .rh img { width: 100%; height: 100%; object-fit: cover; filter: var(--hero-filter); }
 .rh-ov { position: absolute; inset: 0; background: var(--hero-grad); display: flex; flex-direction: column; justify-content: flex-end; padding: 0 40px 40px; }
 .rh-in { max-width: var(--rd-max, 700px); margin: 0 auto; }
 .rh-y { font-family: 'Cardo', Georgia, serif; font-size: 72px; font-weight: 400; letter-spacing: -0.03em; line-height: 1; }
 .rh-s { font-family: 'Cardo', Georgia, serif; font-size: 20px; font-style: italic; color: var(--fg3); margin-top: 4px; }
-.vr { display: flex; align-items: center; gap: 10px; padding: 16px 0; margin-top: 20px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-.vi { width: 28px; height: 28px; border-radius: 50%; background: var(--inv-bg); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
-.vl { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--fg2); }
-.va { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--fg3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px; text-decoration: none; }
-.va:hover { color: var(--fg); }
+.vr { padding: 14px 0 0; }
+.vr-link { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg4); text-decoration: none; transition: color 0.15s; }
+.vr-link:hover { color: var(--fg); }
+.qa-ix { margin: 24px 0 4px; border-bottom: 1px solid var(--border); padding-bottom: 14px; }
+.qa-ix-item { display: flex; align-items: baseline; gap: 12px; width: 100%; text-align: left; padding: 7px 0; background: none; border: none; cursor: pointer; }
+.qa-ix-num { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--fg4); min-width: 26px; text-transform: uppercase; flex-shrink: 0; }
+.qa-ix-text { font-family: 'Cardo', Georgia, serif; font-size: 14px; color: var(--fg3); line-height: 1.45; }
+.qa-ix-item:hover .qa-ix-text, .qa-ix-item.on .qa-ix-text { color: var(--fg); }
 .bbk { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; color: var(--fg4); background: none; border: none; cursor: pointer; padding: 20px 0; display: block; letter-spacing: 0.04em; }
 .bbk:hover { color: var(--fg); }
 .reader-tabs { display: flex; border-bottom: 1px solid var(--border); margin: 20px 0 0; }
@@ -193,13 +200,14 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 .reader-tab-pdf { margin-left: auto; }
 .editor-banner { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--fg4); text-transform: uppercase; padding: 12px 0; letter-spacing: 0.04em; }
 .qa-empty { text-align: center; padding: 80px 0; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 300; color: var(--fg4); }
-.yr-nav { display: flex; justify-content: space-between; align-items: center; padding: 28px 0; border-top: 1px solid var(--border); }
-.yr-nb { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; padding: 9px 18px; border: 1px solid var(--border); background: none; color: var(--fg4); cursor: pointer; letter-spacing: 0.04em; }
-.yr-nb:hover { color: var(--fg); border-color: var(--border2); }
+.yr-nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 0 8px; }
+.yr-nb { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; padding: 9px 0; border: none; background: none; color: var(--fg4); cursor: pointer; letter-spacing: 0.04em; transition: color 0.15s; }
+.yr-nb:hover { color: var(--fg); }
 
 .sg { margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid var(--border); }
 .sg:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
 .sg-h { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.sg-guest .sg-h { flex-direction: row-reverse; }
 .sg-av { width: 22px; height: 22px; border-radius: 50%; background: var(--bg3); color: var(--fg3); font-family: 'IBM Plex Mono', monospace; font-size: 7.5px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase; }
 .sg-nm { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg4); }
 .sg-ord { display: flex; flex-direction: column; gap: 1px; }
@@ -326,31 +334,20 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 .sp-close { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 16px; color: var(--fg4); cursor: pointer; }
 .sp-close:hover { color: var(--fg); }
 
-.ix { position: fixed; top: 52px; left: 0; width: 280px; height: calc(100vh - 52px); background: var(--bg); border-right: 1px solid var(--border); z-index: 140; overflow-y: auto; padding: 0; animation: sl 0.2s ease-out; }
-.ix-head { padding: 20px 20px 12px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-.ix-head h4 { font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fg4); margin: 0; }
-.ix-close { background: none; border: none; font-size: 16px; color: var(--fg4); cursor: pointer; padding: 0; }
-.ix-close:hover { color: var(--fg); }
-.ix-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.12s; }
-.ix-item:hover { background: var(--bg2); }
-.ix-item.active { background: var(--bg3); }
-.ix-num { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--fg4); text-transform: uppercase; white-space: nowrap; padding-top: 2px; min-width: 28px; }
-.ix-text { font-family: 'Cardo', Georgia, serif; font-size: 13px; color: var(--fg2); line-height: 1.5; }
-
 .book-wrap { width: 100vw; margin-left: calc(-50vw + 50%); display: flex; flex-direction: column; min-height: calc(100vh - 52px); }
 .book-spread { display: grid; grid-template-columns: 1fr 1fr; flex: 1; border-top: 1px solid var(--border); }
 .book-page { padding: 48px 52px; overflow: hidden; min-height: 0; box-sizing: border-box; border-right: 1px solid var(--border); }
 .book-page:last-child { border-right: none; }
 .book-page-label { font-family: 'IBM Plex Mono', monospace; font-size: 8px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg5); margin-bottom: 32px; display: flex; justify-content: space-between; }
-.book-nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 52px; border-top: 1px solid var(--border); background: var(--bg); }
-.book-nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; padding: 9px 20px; border: 1px solid var(--border); background: none; color: var(--fg4); cursor: pointer; letter-spacing: 0.04em; }
-.book-nav-btn:hover:not(:disabled) { color: var(--fg); border-color: var(--border2); }
+.book-nav { display: flex; align-items: center; justify-content: space-between; padding: 20px 52px; background: var(--bg); }
+.book-nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; padding: 9px 0; border: none; background: none; color: var(--fg4); cursor: pointer; letter-spacing: 0.04em; transition: color 0.15s; }
+.book-nav-btn:hover:not(:disabled) { color: var(--fg); }
 .book-nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
 .book-nav-info { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--fg4); text-align: center; }
 
-.pnav { display: flex; align-items: center; justify-content: space-between; padding: 32px 0 0; border-top: 1px solid var(--border); margin-top: 32px; }
-.pnav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; padding: 9px 18px; border: 1px solid var(--border); background: none; color: var(--fg4); cursor: pointer; letter-spacing: 0.04em; }
-.pnav-btn:hover:not(:disabled) { color: var(--fg); border-color: var(--border2); }
+.pnav { display: flex; align-items: center; justify-content: space-between; padding: 28px 0 0; border-top: 1px solid var(--border); margin-top: 32px; }
+.pnav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; padding: 9px 0; border: none; background: none; color: var(--fg4); cursor: pointer; letter-spacing: 0.04em; transition: color 0.15s; }
+.pnav-btn:hover:not(:disabled) { color: var(--fg); }
 .pnav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
 .pnav-info { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--fg4); }
 
@@ -359,11 +356,10 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 @keyframes mi { from { opacity: 0; transform: translateY(4px) } }
 @keyframes ti { from { opacity: 0; transform: translateY(3px) } }
 @keyframes sr { from { transform: translateX(100%) } }
-@keyframes sl { from { transform: translateX(-100%) } }
 
 /* ── Print / PDF export ── */
 .print-root { display: none; }
-@page { margin: 20mm 18mm; }
+@page { size: portrait; margin: 20mm 18mm; }
 @media print {
   [data-printing] #root > *:not(.print-root) { display: none !important; }
   .nav, .scroll-top, .sp, .ix, .ep, .stb, .note-pop, .read-progress, .site-footer { display: none !important; }
@@ -399,7 +395,6 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
   .book-spread { grid-template-columns: 1fr; }
   .book-page { padding: 28px 24px; }
   .sp { width: 100%; }
-  .ix { width: 100%; }
 }
 `
 
@@ -460,7 +455,6 @@ export default function App() {
   const [readingMode, setReadingMode] = useState(() => localStorage.getItem('bk_mode') || 'scroll')
   const [readerPage, setReaderPage] = useState(0)
   const [showSettings, setShowSettings] = useState(false)
-  const [showIndex, setShowIndex] = useState(false)
   const [segmentsPerPage, setSegmentsPerPage] = useState(() => parseInt(localStorage.getItem('bk_spp') || '15'))
   const [printJob, setPrintJob] = useState(null)
   const progressRef = useRef(null)
@@ -592,7 +586,7 @@ export default function App() {
   // Scroll listener — progress bar and nav visibility mutate DOM via refs
   // (inner components remount on every render, so per-frame setState is off-limits)
   useEffect(() => {
-    const panelsOpen = showSettings || showIndex || editorPanelOpen
+    const panelsOpen = showSettings || editorPanelOpen
     const autoHide = page === 'reader' && readingMode === 'scroll' && !panelsOpen
     if (!autoHide) {
       navHiddenRef.current = false
@@ -617,7 +611,7 @@ export default function App() {
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
-  }, [page, readingMode, showSettings, showIndex, editorPanelOpen])
+  }, [page, readingMode, showSettings, editorPanelOpen])
 
   // Nav remounts whenever App re-renders; re-apply ref-driven UI state after each render
   useEffect(() => {
@@ -635,7 +629,6 @@ export default function App() {
       }
       if (e.key === 'Escape') {
         setShowSettings(false)
-        setShowIndex(false)
         setEditorPanelOpen(false)
         setSelToolbar(null)
         setSidenoteModal(null)
@@ -725,7 +718,6 @@ export default function App() {
     setCurrentYear(null)
     setEditorPanelOpen(false)
     setShowSettings(false)
-    setShowIndex(false)
     window.history.pushState({ page: 'grid' }, '')
     window.scrollTo(0, 0)
   }
@@ -944,7 +936,7 @@ export default function App() {
     const avStyle = bg ? { background: bg, color: '#fff' } : {}
 
     return (
-      <div key={seg.id} className="sg" onMouseUp={e => handleMouseUp(e, seg.id)}>
+      <div key={seg.id} className={`sg${bg ? '' : ' sg-guest'}`} onMouseUp={e => handleMouseUp(e, seg.id)}>
         <div className="sg-h">
           <div className="sg-av" style={avStyle}>{initials(seg.speaker || '')}</div>
           <span className="sg-nm">{seg.speaker || 'Speaker'}</span>
@@ -1116,24 +1108,19 @@ ${items.map(({ year, seg }) => `
           <button className="nb" onClick={() => setTheme(t => t === 'light' ? 'sepia' : t === 'sepia' ? 'dark' : 'light')}>
             {theme === 'light' ? '●' : theme === 'sepia' ? '◐' : '○'}
           </button>
-          <button className={`nb${bookmarks.size > 0 ? ' on' : ''}`} onClick={() => { setPage('bookmarks'); window.history.pushState({ page: 'bookmarks' }, '') }}>
+          <button className={`nb nb-star${bookmarks.size > 0 ? ' on' : ''}`} onClick={() => { setPage('bookmarks'); window.history.pushState({ page: 'bookmarks' }, '') }}>
             ★
           </button>
           {page === 'reader' && (
-            <>
-              <button className={`nb${showIndex ? ' on' : ''}`} onClick={() => { setShowIndex(v => !v); setShowSettings(false) }}>
-                Index
-              </button>
-              <button className="nb" onClick={() => setChineseMode(m => m === 'none' ? 'trad' : m === 'trad' ? 'simp' : 'none')}>
-                {chLabel}
-              </button>
-            </>
+            <button className="nb" onClick={() => setChineseMode(m => m === 'none' ? 'trad' : m === 'trad' ? 'simp' : 'none')}>
+              {chLabel}
+            </button>
           )}
-          <button className={`nb${showSettings ? ' on' : ''}`} onClick={() => { setShowSettings(v => !v); setShowIndex(false); setEditorPanelOpen(false) }}>
+          <button className={`nb${showSettings ? ' on' : ''}`} onClick={() => { setShowSettings(v => !v); setEditorPanelOpen(false) }}>
             Aa
           </button>
           {isEditor && page === 'reader' && (
-            <button className={`nb${editorPanelOpen ? ' on' : ''}`} onClick={() => { setEditorPanelOpen(v => !v); setShowSettings(false); setShowIndex(false) }}>
+            <button className={`nb${editorPanelOpen ? ' on' : ''}`} onClick={() => { setEditorPanelOpen(v => !v); setShowSettings(false) }}>
               {editorPanelOpen ? 'Close' : '+ Edit'}
             </button>
           )}
@@ -1162,8 +1149,8 @@ ${items.map(({ year, seg }) => `
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <span className="gp-count">{years.length} years</span>
-            <button className="sort-btn" onClick={() => { setSortAsc(v => !v); setGridPage(0) }} title="Sort">
-              {sortAsc ? '↑' : '↓'}
+            <button className="sort-btn" onClick={() => { setSortAsc(v => !v); setGridPage(0) }} title="Sort order">
+              {sortAsc ? 'Oldest ↑' : 'Newest ↓'}
             </button>
           </div>
         </div>
@@ -1180,7 +1167,7 @@ ${items.map(({ year, seg }) => `
                 <div className="yc-b">
                   <div className="yc-y">{y.year}</div>
                   {y.title && <div className="yc-s">{y.title}</div>}
-                  <div className="yc-c">{(y.segments || []).length} segments</div>
+                  <div className="yc-c">{(y.segments || []).filter(s => s.type === 'text').length} conversations</div>
                 </div>
               </div>
             </div>
@@ -1190,6 +1177,14 @@ ${items.map(({ year, seg }) => `
               <div className="yc-add" onClick={() => setAddYearModalOpen(true)}>
                 <div className="yc-add-icon">+</div>
                 <span className="yc-add-label">Add Year</span>
+              </div>
+            </div>
+          )}
+          {!isEditor && gridPage >= totalGridPages - 1 && (
+            <div className="yc-wrap">
+              <div className="yc-soon">
+                <div className="yc-soon-t">More years on the way</div>
+                <div className="yc-soon-s">New transcripts added regularly</div>
               </div>
             </div>
           )}
@@ -1229,9 +1224,7 @@ ${items.map(({ year, seg }) => `
         )}
         {yd?.videoUrl && (
           <div className="vr">
-            <div className="vi">▶</div>
-            <span className="vl">Watch Meeting</span>
-            <a className="va" href={yd.videoUrl} target="_blank" rel="noopener noreferrer">{yd.videoUrl}</a>
+            <a className="vr-link" href={yd.videoUrl} target="_blank" rel="noopener noreferrer">▶&nbsp;&nbsp;Watch the meeting</a>
           </div>
         )}
       </>
@@ -1251,6 +1244,7 @@ ${items.map(({ year, seg }) => `
           <button className="reader-tab reader-tab-pdf" onClick={() => openPrint(readerTab === 'qa' ? 'qa' : 'transcript')}>PDF ↓</button>
         </div>
         {isEditor && <div className="editor-banner">Editor mode — {(currentYearData?.segments || []).length} total segments</div>}
+        <QAIndex />
         <div style={{ paddingTop: 24 }}>
           {pageSegments.length === 0 && (
             <div className="qa-empty">No content for this section.</div>
@@ -1280,6 +1274,7 @@ ${items.map(({ year, seg }) => `
             <button className="reader-tab reader-tab-pdf" onClick={() => openPrint(readerTab === 'qa' ? 'qa' : 'transcript')}>PDF ↓</button>
           </div>
           {isEditor && <div className="editor-banner">Editor mode — {(currentYearData?.segments || []).length} total segments</div>}
+          <QAIndex />
         </div>
         <div className="book-wrap">
           <div className="book-spread">
@@ -1305,8 +1300,6 @@ ${items.map(({ year, seg }) => `
             <button className="book-nav-btn" disabled={readerPage === 0} onClick={prevPage}>← Previous Spread</button>
             <div className="book-nav-info">
               {readerPage + 1} / {totalReaderPages}
-              <br />
-              <span style={{ fontSize: 9, color: 'var(--fg5)' }}>Use ← → keys to turn pages</span>
             </div>
             <button className="book-nav-btn" disabled={readerPage >= totalReaderPages - 1} onClick={nextPage}>Next Spread →</button>
           </div>
@@ -1570,29 +1563,20 @@ ${items.map(({ year, seg }) => `
     )
   }
 
-  function IndexPanel() {
+  function QAIndex() {
+    if (readerTab !== 'qa' || qaIndex.length === 0) return null
     return (
-      <div className="ix">
-        <div className="ix-head">
-          <h4>Q&amp;A Index</h4>
-          <button className="ix-close" onClick={() => setShowIndex(false)}>✕</button>
-        </div>
-        {qaIndex.length === 0 ? (
-          <div style={{ padding: '24px 20px', fontFamily: 'IBM Plex Mono', fontSize: 10, color: 'var(--fg4)' }}>
-            No Q&amp;A headings found
-          </div>
-        ) : (
-          qaIndex.map((item, i) => (
-            <div
-              key={item.id}
-              className={`ix-item${getSegmentPage(item.id) === readerPage ? ' active' : ''}`}
-              onClick={() => { setReaderPage(getSegmentPage(item.id)); setShowIndex(false) }}
-            >
-              <span className="ix-num">Q{i + 1}</span>
-              <span className="ix-text">{item.text}</span>
-            </div>
-          ))
-        )}
+      <div className="qa-ix">
+        {qaIndex.map((item, i) => (
+          <button
+            key={item.id}
+            className={`qa-ix-item${getSegmentPage(item.id) === readerPage ? ' on' : ''}`}
+            onClick={() => setReaderPage(getSegmentPage(item.id))}
+          >
+            <span className="qa-ix-num">Q{i + 1}</span>
+            <span className="qa-ix-text">{item.text}</span>
+          </button>
+        ))}
       </div>
     )
   }
@@ -1886,7 +1870,6 @@ ${items.map(({ year, seg }) => `
           {page === 'login' && <LoginPage />}
           {page === 'bookmarks' && <BookmarksPage />}
           {showSettings && page === 'reader' && <SettingsPanel />}
-          {showIndex && page === 'reader' && <IndexPanel />}
           {isEditor && editorPanelOpen && page === 'reader' && <EditorPanel />}
           <SiteFooter />
           {showScrollTop && page === 'reader' && readingMode === 'scroll' && (
