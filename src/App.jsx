@@ -187,11 +187,11 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 .vr { padding: 14px 0 0; }
 .vr-link { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg4); text-decoration: none; transition: color 0.15s; }
 .vr-link:hover { color: var(--fg); }
-.qa-ix { margin: 24px 0 4px; border-bottom: 1px solid var(--border); padding-bottom: 14px; }
-.qa-ix-item { display: flex; align-items: baseline; gap: 12px; width: 100%; text-align: left; padding: 7px 0; background: none; border: none; cursor: pointer; }
-.qa-ix-num { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--fg4); min-width: 26px; text-transform: uppercase; flex-shrink: 0; }
-.qa-ix-text { font-family: 'Cardo', Georgia, serif; font-size: 14px; color: var(--fg3); line-height: 1.45; }
-.qa-ix-item:hover .qa-ix-text, .qa-ix-item.on .qa-ix-text { color: var(--fg); }
+.qa-ix { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 20px 0 0; }
+.qa-ix-lbl { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg4); margin-right: 4px; }
+.qa-ix-chip { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.04em; padding: 5px 9px; border: 1px solid var(--border); background: none; color: var(--fg4); cursor: pointer; transition: color 0.15s, border-color 0.15s; }
+.qa-ix-chip:hover { color: var(--fg); border-color: var(--border2); }
+.qa-ix-chip.on { background: var(--inv-bg); color: var(--inv-fg); border-color: var(--inv-bg); }
 .bbk { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; color: var(--fg4); background: none; border: none; cursor: pointer; padding: 20px 0; display: block; letter-spacing: 0.04em; }
 .bbk:hover { color: var(--fg); }
 .reader-tabs { display: flex; border-bottom: 1px solid var(--border); margin: 20px 0 0; }
@@ -207,8 +207,9 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 .sg { margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid var(--border); }
 .sg:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
 .sg-h { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-.sg-guest .sg-h { flex-direction: row-reverse; }
-.sg-av { width: 22px; height: 22px; border-radius: 50%; background: var(--bg3); color: var(--fg3); font-family: 'IBM Plex Mono', monospace; font-size: 7.5px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase; }
+.sg-guest .sg-h { justify-content: flex-end; }
+.sg-guest .sg-st { margin-left: 0; }
+.sg-av { width: 22px; height: 22px; border-radius: 50%; background: var(--inv-bg); color: var(--inv-fg); font-family: 'IBM Plex Mono', monospace; font-size: 7.5px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase; }
 .sg-nm { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg4); }
 .sg-ord { display: flex; flex-direction: column; gap: 1px; }
 .sg-ord button { font-family: 'IBM Plex Mono', monospace; font-size: 9px; border: 1px solid var(--border); background: none; color: var(--fg4); padding: 2px 6px; cursor: pointer; line-height: 1; }
@@ -1150,7 +1151,7 @@ ${items.map(({ year, seg }) => `
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <span className="gp-count">{years.length} years</span>
             <button className="sort-btn" onClick={() => { setSortAsc(v => !v); setGridPage(0) }} title="Sort order">
-              {sortAsc ? 'Oldest ↑' : 'Newest ↓'}
+              {sortAsc ? 'Oldest' : 'Newest'}
             </button>
           </div>
         </div>
@@ -1567,14 +1568,15 @@ ${items.map(({ year, seg }) => `
     if (readerTab !== 'qa' || qaIndex.length === 0) return null
     return (
       <div className="qa-ix">
+        <span className="qa-ix-lbl">Jump to</span>
         {qaIndex.map((item, i) => (
           <button
             key={item.id}
-            className={`qa-ix-item${getSegmentPage(item.id) === readerPage ? ' on' : ''}`}
+            className={`qa-ix-chip${getSegmentPage(item.id) === readerPage ? ' on' : ''}`}
+            title={item.text}
             onClick={() => setReaderPage(getSegmentPage(item.id))}
           >
-            <span className="qa-ix-num">Q{i + 1}</span>
-            <span className="qa-ix-text">{item.text}</span>
+            Q{i + 1}
           </button>
         ))}
       </div>
