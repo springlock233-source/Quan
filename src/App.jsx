@@ -234,7 +234,7 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 .sg-hdg-text { font-weight: 400; letter-spacing: 0; color: var(--fg); margin: 0; line-height: 1.35; text-wrap: balance; }
 .sg-img img { width: 100%; object-fit: contain; filter: var(--cover-filter); }
 .sg-img-cap { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--fg4); letter-spacing: 0.06em; text-align: center; margin-top: 10px; }
-.hl { background: rgba(255, 226, 100, 0.45); padding: 1px 0; }
+.hl { background: rgba(255, 236, 140, 0.32); padding: 1px 0; }
 [data-theme="dark"] .hl { background: rgba(255, 214, 80, 0.17); }
 [data-theme="sepia"] .hl { background: rgba(250, 200, 60, 0.35); }
 .hl.hl-ed { cursor: pointer; }
@@ -250,10 +250,9 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 .stb-b:hover { opacity: 1; }
 
 .note-pop { position: fixed; z-index: 250; background: var(--bg); border: 1px solid var(--border2); padding: 18px 20px 16px; width: 290px; max-height: min(70vh, 460px); box-shadow: 0 8px 32px rgba(0,0,0,0.12); animation: fi 0.12s ease-out; display: flex; flex-direction: column; }
-.note-pop-hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.note-pop-hd span { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--fg4); text-transform: uppercase; }
-.note-pop-hd button { background: none; border: none; cursor: pointer; color: var(--fg4); font-size: 16px; line-height: 1; padding: 0; }
-.note-pop-body { font-family: 'Cardo', Georgia, serif; font-size: 14px; line-height: 1.65; color: var(--fg2); white-space: pre-wrap; overflow-y: auto; flex: 1; }
+.note-pop-x { position: absolute; top: 10px; right: 12px; background: none; border: none; cursor: pointer; color: var(--fg4); font-size: 15px; line-height: 1; padding: 0; }
+.note-pop-x:hover { color: var(--fg); }
+.note-pop-body { font-family: 'Cardo', Georgia, serif; font-size: 14px; line-height: 1.65; color: var(--fg2); white-space: pre-wrap; overflow-y: auto; flex: 1; padding-right: 18px; }
 .note-pop-del { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--fg5); background: none; border: none; border-top: 1px solid var(--border); padding: 10px 0 0; cursor: pointer; margin-top: 12px; text-align: left; }
 .note-pop-del:hover { color: var(--fg3); }
 
@@ -1933,10 +1932,7 @@ ${items.map(({ year, seg }) => `
         className="note-pop"
         style={{ left: Math.min(x, window.innerWidth - 310), top: Math.min(y, window.innerHeight - 200) }}
       >
-        <div className="note-pop-hd">
-          <span>Definition</span>
-          <button onClick={() => setSidenotePopover(null)}>✕</button>
-        </div>
+        <button className="note-pop-x" onClick={() => setSidenotePopover(null)}>✕</button>
         <div className="note-pop-body">{note}</div>
         {isEditor && (
           <button className="note-pop-del" onClick={() => deleteSidenote(segId, idx)}>Delete definition</button>
@@ -1952,7 +1948,6 @@ ${items.map(({ year, seg }) => `
     return (
       <div className="mbg" onClick={() => setNoteView(null)}>
         <div className="mbox about-box note-view" onClick={e => e.stopPropagation()}>
-          <h3>Note</h3>
           {noteView.editing ? (
             <>
               <textarea
@@ -2158,7 +2153,7 @@ ${items.map(({ year, seg }) => `
         <button className="site-footer-btn" onClick={() => setReportModalOpen(true)}>
           Berkshire Meeting Archive
         </button>
-        <button className="site-footer-btn site-footer-about" onClick={() => { setAboutLang(chineseMode === 'trad' ? 'zh' : 'en'); setAboutModalOpen(true) }}>
+        <button className="site-footer-btn site-footer-about" onClick={() => { setAboutLang('en'); setAboutModalOpen(true) }}>
           About
         </button>
       </footer>
