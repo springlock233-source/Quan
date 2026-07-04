@@ -25,6 +25,11 @@ const FONTS = [
   { label: 'Literata', value: "'Literata', Georgia, serif" },
   { label: 'Sans', value: "'Outfit', system-ui, sans-serif" },
 ]
+// Unsigned browser uploads to the same Cloudinary account that hosts the covers.
+// Requires an unsigned upload preset named below (Cloudinary → Settings → Upload).
+const CLOUDINARY_CLOUD = 'diweivz67'
+const CLOUDINARY_PRESET = 'berkshire_letters'
+
 const FS_MIN = 13
 const FS_MAX = 25
 const FS_STEP = 2
@@ -438,6 +443,7 @@ export default function App() {
   const [sidenoteText, setSidenoteText] = useState('')
   const readerReady = useRef(false)
   const [imageForm, setImageForm] = useState({ url: '', caption: '' })
+  const [imgUpload, setImgUpload] = useState({ busy: false, error: '' })
   const [headingInput, setHeadingInput] = useState('')
   const [addYearModalOpen, setAddYearModalOpen] = useState(false)
   const [reportModalOpen, setReportModalOpen] = useState(false)
@@ -926,10 +932,18 @@ export default function App() {
         <div key={seg.id} className="sg sg-img">
           {isEditor && (
             <div className="sg-h">
+              {allSegs && (
+                <div className="sg-ord">
+                  <button onClick={() => moveSegment(seg.id, -1)} disabled={index === 0}>▲</button>
+                  <button onClick={() => moveSegment(seg.id, 1)} disabled={index === allSegs.length - 1}>▼</button>
+                </div>
+              )}
+              <button className={`sg-qa${seg.isQA ? ' on' : ''}`} onClick={() => toggleSegQA(seg.id)}>QA</button>
+              <button className="sg-edit" onClick={() => setEditingSegment({ ...seg })}>✎</button>
               <button className="sg-del" onClick={() => deleteSegment(seg.id)}>✕</button>
             </div>
           )}
-          {seg.url && <img src={seg.url} alt={seg.caption || ''} />}
+          {seg.url && <img src={seg.url} alt={seg.caption || ''} loading="lazy" />}
           {seg.caption && <p className="sg-img-cap">{seg.caption}</p>}
         </div>
       )
@@ -977,12 +991,32 @@ export default function App() {
     setYears(prev => prev.map(y => y.year === currentYear ? { ...y, [field]: value } : y))
   }
 
+  async function uploadImageFile(file) {
+    if (!file) return
+    setImgUpload({ busy: true, error: '' })
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      fd.append('upload_preset', CLOUDINARY_PRESET)
+      const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: 'POST', body: fd })
+      const data = await r.json()
+      if (data.secure_url) {
+        setImageForm(f => ({ ...f, url: data.secure_url }))
+        setImgUpload({ busy: false, error: '' })
+      } else {
+        setImgUpload({ busy: false, error: data.error?.message || 'Upload failed' })
+      }
+    } catch {
+      setImgUpload({ busy: false, error: 'Upload failed — check connection' })
+    }
+  }
+
   function addSegment(type) {
     const id = `seg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
     let seg = { id, type }
     if (type === 'text') seg = { ...seg, speaker: editorForm.speaker, en: editorForm.en, zh: editorForm.zh, isQA: false }
     if (type === 'heading') seg = { ...seg, text: headingInput, isQA: false }
-    if (type === 'image') seg = { ...seg, url: imageForm.url, caption: imageForm.caption }
+    if (type === 'image') seg = { ...seg, url: imageForm.url, caption: imageForm.caption, isQA: false }
     setYears(prev => prev.map(y => y.year === currentYear
       ? { ...y, segments: [...(y.segments || []), seg] }
       : y))
@@ -1168,7 +1202,7 @@ ${items.map(({ year, seg }) => `
               )}
               <div className="yc" onClick={() => goToReader(y.year)}>
                 <div className="yc-i">
-                  {y.cover ? <img src={y.cover} alt={String(y.year)} style={y.coverPos ? { objectPosition: `center ${y.coverPos}%` } : {}} /> : null}
+                  {y.cover ? <img src={y.cover} alt={String(y.year)} loading="lazy" style={y.coverPos ? { objectPosition: `center ${y.coverPos}%` } : {}} /> : null}
                 </div>
                 <div className="yc-b">
                   <div className="yc-y">{y.year}</div>
@@ -1682,9 +1716,25 @@ ${items.map(({ year, seg }) => `
               <hr />
               <div className="ep-section-lbl">Image</div>
               <div className="ep-field">
-                <label>Image URL</label>
+                <label>Upload image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={imgUpload.busy}
+                  onChange={e => { uploadImageFile(e.target.files?.[0]); e.target.value = '' }}
+                />
+                {imgUpload.busy && <div className="ep-section-lbl" style={{ marginTop: 6, marginBottom: 0 }}>Uploading…</div>}
+                {imgUpload.error && <div className="ep-err" style={{ marginTop: 6, marginBottom: 0 }}>{imgUpload.error}</div>}
+              </div>
+              <div className="ep-field">
+                <label>Image URL (filled by upload, or paste one)</label>
                 <input value={imageForm.url} onChange={e => setImageForm(f => ({ ...f, url: e.target.value }))} placeholder="https://..." />
               </div>
+              {imageForm.url && (
+                <div className="cover-preview" style={{ marginBottom: 14 }}>
+                  <img src={imageForm.url} alt="preview" />
+                </div>
+              )}
               <div className="ep-field">
                 <label>Caption</label>
                 <input value={imageForm.caption} onChange={e => setImageForm(f => ({ ...f, caption: e.target.value }))} />
