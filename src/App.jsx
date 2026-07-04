@@ -129,7 +129,8 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 .gp-count { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--fg4); text-transform: uppercase; }
 .sort-btn { font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; background: none; border: 1px solid var(--border); color: var(--fg4); padding: 6px 12px; cursor: pointer; line-height: 1; transition: color 0.15s, border-color 0.15s; }
 .sort-btn:hover { color: var(--fg); border-color: var(--border2); }
-.nb-star { font-size: 14px; padding: 3px 10px; line-height: 1; }
+.nb-star { font-size: 16px; padding: 2px 10px; line-height: 1; }
+.nb-star.has { color: var(--fg); }
 .yc-soon { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 200px; padding: 48px 24px; background: var(--bg); }
 .yc-soon-t { font-family: 'Cardo', Georgia, serif; font-size: 17px; font-style: italic; color: var(--fg3); }
 .yc-soon-s { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.08em; color: var(--fg4); text-transform: uppercase; }
@@ -290,6 +291,9 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 .bi-t { font-family: 'Cardo', Georgia, serif; font-size: 16px; color: var(--fg2); line-height: 1.6; }
 
 .site-footer { text-align: center; padding: 28px 40px; border-top: 1px solid var(--border); }
+.report-contact { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--fg4); border-top: 1px solid var(--border); padding-top: 14px; margin: 18px 0 0; }
+.report-contact a { color: var(--fg3); }
+.report-contact a:hover { color: var(--fg); }
 .site-footer-btn { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.06em; background: none; border: none; color: var(--fg4); cursor: pointer; text-transform: uppercase; }
 .site-footer-btn:hover { color: var(--fg); }
 .scroll-top { position: fixed; bottom: 28px; right: 22px; width: 38px; height: 38px; border-radius: 50%; background: var(--inv-bg); color: var(--inv-fg); border: none; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 12px rgba(0,0,0,0.18); opacity: 0.82; z-index: 90; }
@@ -419,7 +423,11 @@ export default function App() {
   const passwordRef = useRef('')
   const [highlights, setHighlights] = useState({})
   const [sidenotes, setSidenotes] = useState({})
-  const [bookmarks, setBookmarks] = useState(new Set())
+  // Saved passages are personal to each reader: stored in this browser only
+  const [bookmarks, setBookmarks] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('bk_stars') || '[]')) }
+    catch { return new Set() }
+  })
   const [selToolbar, setSelToolbar] = useState(null)
   const [sidenoteModal, setSidenoteModal] = useState(null)
   const [sidenotePopover, setSidenotePopover] = useState(null)
@@ -512,7 +520,6 @@ export default function App() {
       .then(data => {
         if (data.highlights) setHighlights(data.highlights)
         if (data.sidenotes) setSidenotes(data.sidenotes)
-        if (data.bookmarks) setBookmarks(new Set(data.bookmarks))
         setTimeout(() => { readerReady.current = true }, 200)
       })
       .catch(() => { readerReady.current = true })
@@ -568,11 +575,16 @@ export default function App() {
       fetch('/api/reader', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ highlights, sidenotes, bookmarks: [...bookmarks] }),
+        body: JSON.stringify({ highlights, sidenotes }),
       }).catch(() => {})
     }, 1500)
     return () => clearTimeout(saveReaderTimer.current)
-  }, [highlights, sidenotes, bookmarks])
+  }, [highlights, sidenotes])
+
+  // Persist saved passages locally (per reader)
+  useEffect(() => {
+    localStorage.setItem('bk_stars', JSON.stringify([...bookmarks]))
+  }, [bookmarks])
 
   // Scroll listener — progress bar and nav visibility mutate DOM via refs
   // (inner components remount on every render, so per-frame setState is off-limits)
@@ -1100,17 +1112,19 @@ ${items.map(({ year, seg }) => `
           <button className="nb" onClick={() => setTheme(t => t === 'light' ? 'sepia' : t === 'sepia' ? 'dark' : 'light')}>
             {theme === 'light' ? '●' : theme === 'sepia' ? '◐' : '○'}
           </button>
-          <button className={`nb nb-star${bookmarks.size > 0 ? ' on' : ''}`} onClick={() => { setPage('bookmarks'); window.history.pushState({ page: 'bookmarks' }, '') }}>
+          <button className={`nb nb-star${bookmarks.size > 0 ? ' has' : ''}`} onClick={() => { setPage('bookmarks'); window.history.pushState({ page: 'bookmarks' }, '') }}>
             ★
           </button>
           {page === 'reader' && (
-            <button className={`nb${chineseMode === 'trad' ? ' on' : ''}`} onClick={() => setChineseMode(m => m === 'none' ? 'trad' : 'none')}>
-              中
+            <button className="nb" onClick={() => setChineseMode(m => m === 'none' ? 'trad' : 'none')}>
+              {chineseMode === 'trad' ? 'CN' : 'EN'}
             </button>
           )}
-          <button className={`nb${showSettings ? ' on' : ''}`} onClick={() => { setShowSettings(v => !v); setEditorPanelOpen(false) }}>
-            Aa
-          </button>
+          {page === 'reader' && (
+            <button className={`nb${showSettings ? ' on' : ''}`} onClick={() => { setShowSettings(v => !v); setEditorPanelOpen(false) }}>
+              Aa
+            </button>
+          )}
           {isEditor && page === 'reader' && (
             <button className={`nb${editorPanelOpen ? ' on' : ''}`} onClick={() => { setEditorPanelOpen(v => !v); setShowSettings(false) }}>
               {editorPanelOpen ? 'Close' : '+ Edit'}
@@ -1239,7 +1253,7 @@ ${items.map(({ year, seg }) => `
         <div className="reader-tabs">
           <button className={`reader-tab${readerTab === 'transcript' ? ' on' : ''}`} onClick={() => setReaderTab('transcript')}>Transcript</button>
           <button className={`reader-tab${readerTab === 'qa' ? ' on' : ''}`} onClick={() => setReaderTab('qa')}>Q&A</button>
-          <button className="reader-tab reader-tab-pdf" onClick={() => openPrint(readerTab === 'qa' ? 'qa' : 'transcript')}>PDF ↓</button>
+          <button className="reader-tab reader-tab-pdf" onClick={() => openPrint(readerTab === 'qa' ? 'qa' : 'transcript')}>PDF</button>
         </div>
         {isEditor && <div className="editor-banner">Editor mode — {(currentYearData?.segments || []).length} total segments</div>}
         {QAIndex()}
@@ -1269,7 +1283,7 @@ ${items.map(({ year, seg }) => `
           <div className="reader-tabs">
             <button className={`reader-tab${readerTab === 'transcript' ? ' on' : ''}`} onClick={() => setReaderTab('transcript')}>Transcript</button>
             <button className={`reader-tab${readerTab === 'qa' ? ' on' : ''}`} onClick={() => setReaderTab('qa')}>Q&A</button>
-            <button className="reader-tab reader-tab-pdf" onClick={() => openPrint(readerTab === 'qa' ? 'qa' : 'transcript')}>PDF ↓</button>
+            <button className="reader-tab reader-tab-pdf" onClick={() => openPrint(readerTab === 'qa' ? 'qa' : 'transcript')}>PDF</button>
           </div>
           {isEditor && <div className="editor-banner">Editor mode — {(currentYearData?.segments || []).length} total segments</div>}
           {QAIndex()}
@@ -1837,6 +1851,9 @@ ${items.map(({ year, seg }) => `
             Highlights: {Object.values(highlights).reduce((a, v) => a + v.length, 0)}<br />
             Notes: {Object.values(sidenotes).reduce((a, v) => a + v.length, 0)}
           </p>
+          <p className="report-contact">
+            Questions? Contact <a href="mailto:springlock233@gmail.com">springlock233@gmail.com</a>
+          </p>
           <div className="mbox-acts">
             <button className="btn p" onClick={() => setReportModalOpen(false)}>Close</button>
           </div>
@@ -1871,7 +1888,7 @@ ${items.map(({ year, seg }) => `
           {page === 'bookmarks' && BookmarksPage()}
           {showSettings && page === 'reader' && SettingsPanel()}
           {isEditor && editorPanelOpen && page === 'reader' && EditorPanel()}
-          {SiteFooter()}
+          {page === 'grid' && SiteFooter()}
           {showScrollTop && page === 'reader' && readingMode === 'scroll' && (
             <button className="scroll-top" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>♠</button>
           )}

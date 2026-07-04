@@ -24,24 +24,23 @@ export default async function handler(req, res) {
     try {
       const db = await getDb()
       const doc = await db.collection('content').findOne({ _id: 'reader' })
-      // legacy fallback: earlier versions stored hls/notes/bms
+      // legacy fallback: earlier versions stored hls/notes
       return res.status(200).json({
         highlights: doc?.highlights || doc?.hls || {},
-        sidenotes: doc?.sidenotes || doc?.notes || {},
-        bookmarks: doc?.bookmarks || doc?.bms || []
+        sidenotes: doc?.sidenotes || doc?.notes || {}
       })
     } catch (e) {
-      return res.status(200).json({ highlights: {}, sidenotes: {}, bookmarks: [] })
+      return res.status(200).json({ highlights: {}, sidenotes: {} })
     }
   }
 
   if (req.method === 'POST') {
     try {
-      const { highlights, sidenotes, bookmarks } = req.body || {}
+      const { highlights, sidenotes } = req.body || {}
       const db = await getDb()
       await db.collection('content').updateOne(
         { _id: 'reader' },
-        { $set: { highlights: highlights || {}, sidenotes: sidenotes || {}, bookmarks: bookmarks || [] } },
+        { $set: { highlights: highlights || {}, sidenotes: sidenotes || {} } },
         { upsert: true }
       )
       return res.status(200).json({ ok: true })
