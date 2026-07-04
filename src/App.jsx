@@ -5,6 +5,15 @@ function splitParas(text) {
   return (text || '').split(/\n{2,}/).map(t => t.trim()).filter(Boolean)
 }
 
+function videoSource(url) {
+  try {
+    const h = new URL(url).hostname.replace(/^www\./, '')
+    if (h.includes('youtube') || h === 'youtu.be') return 'YouTube'
+    if (h.includes('cnbc')) return 'CNBC'
+    return h
+  } catch { return '' }
+}
+
 // ─── Avatar helpers ───────────────────────────────────────────────────────────
 function avatarBg(speaker) {
   if (speaker === 'Warren Buffett') return '#0d2040'
@@ -295,10 +304,16 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 .bi-m { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--fg4); text-transform: uppercase; margin-bottom: 8px; }
 .bi-t { font-family: 'Cardo', Georgia, serif; font-size: 16px; color: var(--fg2); line-height: 1.6; }
 
-.site-footer { text-align: center; padding: 28px 40px; border-top: 1px solid var(--border); }
+.site-footer { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 28px 40px; border-top: 1px solid var(--border); }
+.site-footer-about { font-size: 9px; color: var(--fg5); }
+.about-box { width: 480px; max-height: 84vh; overflow-y: auto; }
+.about-updated { font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg5); margin: -8px 0 16px; }
+.about-lbl { font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg4); margin: 18px 0 6px; }
+.about-body { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 300; line-height: 1.75; color: var(--fg2); margin: 0; }
 .report-contact { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--fg4); border-top: 1px solid var(--border); padding-top: 14px; margin: 18px 0 0; }
 .report-contact a { color: var(--fg3); }
 .report-contact a:hover { color: var(--fg); }
+.rd-attrib { text-align: center; padding: 26px 0 0; margin-top: 8px; border-top: 1px solid var(--border); font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.05em; line-height: 2; color: var(--fg5); text-transform: uppercase; }
 .site-footer-btn { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.06em; background: none; border: none; color: var(--fg4); cursor: pointer; text-transform: uppercase; }
 .site-footer-btn:hover { color: var(--fg); }
 .scroll-top { position: fixed; bottom: 28px; right: 22px; width: 38px; height: 38px; border-radius: 50%; background: var(--inv-bg); color: var(--inv-fg); border: none; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 12px rgba(0,0,0,0.18); opacity: 0.82; z-index: 90; }
@@ -447,6 +462,7 @@ export default function App() {
   const [headingInput, setHeadingInput] = useState('')
   const [addYearModalOpen, setAddYearModalOpen] = useState(false)
   const [reportModalOpen, setReportModalOpen] = useState(false)
+  const [aboutModalOpen, setAboutModalOpen] = useState(false)
   const [showScrollTop, setShowScrollTop] = useState(false)
   const [editingSegment, setEditingSegment] = useState(null)
   const [readerTab, setReaderTab] = useState('transcript')
@@ -645,6 +661,7 @@ export default function App() {
         setAddYearModalOpen(false)
         setEditingSegment(null)
         setReportModalOpen(false)
+        setAboutModalOpen(false)
       }
     }
     window.addEventListener('keydown', onKey)
@@ -1129,7 +1146,7 @@ ${items.map(({ year, seg }) => `
   function LoadingScreen() {
     return (
       <div className="load-wrap" data-theme={theme}>
-        <div className="load-brand">Berkshire <span>Letters</span></div>
+        <div className="load-brand">Berkshire <span>Archive</span></div>
         <div className="load-track"><div className="load-bar" /></div>
       </div>
     )
@@ -1140,7 +1157,7 @@ ${items.map(({ year, seg }) => `
     return (
       <nav className="nav" ref={navRef}>
         <div className="nav-brand" onClick={goToGrid}>
-          Berkshire <span>Letters</span>
+          Berkshire <span>Archive</span>
         </div>
         <div className="nav-r">
           <button className="nb" onClick={() => setTheme(t => t === 'light' ? 'sepia' : t === 'sepia' ? 'dark' : 'light')}>
@@ -1267,12 +1284,25 @@ ${items.map(({ year, seg }) => `
   }
 
   function ReaderActions() {
+    const src = currentYearData?.videoUrl ? videoSource(currentYearData.videoUrl) : ''
     return (
       <div className="rd-actions">
         <button className="bbk" onClick={goToGrid}>← All Years</button>
         {currentYearData?.videoUrl && (
-          <a className="vr-link" href={currentYearData.videoUrl} target="_blank" rel="noopener noreferrer">▶&nbsp;&nbsp;Watch the meeting</a>
+          <a className="vr-link" href={currentYearData.videoUrl} target="_blank" rel="noopener noreferrer">
+            ▶&nbsp;&nbsp;Watch the meeting{src ? ` · ${src}` : ''}
+          </a>
         )}
+      </div>
+    )
+  }
+
+  function ReaderAttribution() {
+    return (
+      <div className="rd-attrib">
+        Video © CNBC · Warren Buffett Archive
+        <br />
+        Spoken remarks © their respective speakers
       </div>
     )
   }
@@ -1303,6 +1333,7 @@ ${items.map(({ year, seg }) => `
           <button className="pnav-btn" disabled={readerPage >= totalReaderPages - 1} onClick={nextPage}>Next →</button>
         </div>
         {YearNav()}
+        {ReaderAttribution()}
       </div>
     )
   }
@@ -1326,7 +1357,7 @@ ${items.map(({ year, seg }) => `
           <div className="book-spread">
             <div className="book-page">
               <div className="book-page-label">
-                <span>Berkshire Letters · {currentYear}</span>
+                <span>Berkshire Archive · {currentYear}</span>
                 <span>{currentYearData?.title}</span>
               </div>
               {leftPageSegs.map((seg) => renderSegment(seg, allSegs.indexOf(seg), allSegs))}
@@ -1352,6 +1383,7 @@ ${items.map(({ year, seg }) => `
         </div>
         <div style={{ maxWidth: 'var(--rd-max, 700px)', margin: '0 auto', padding: '0 40px' }}>
           {YearNav()}
+          {ReaderAttribution()}
         </div>
       </div>
     )
@@ -1901,11 +1933,44 @@ ${items.map(({ year, seg }) => `
             Highlights: {Object.values(highlights).reduce((a, v) => a + v.length, 0)}<br />
             Notes: {Object.values(sidenotes).reduce((a, v) => a + v.length, 0)}
           </p>
-          <p className="report-contact">
-            Questions? Contact <a href="mailto:springlock233@gmail.com">springlock233@gmail.com</a>
-          </p>
           <div className="mbox-acts">
             <button className="btn p" onClick={() => setReportModalOpen(false)}>Close</button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  function AboutModal() {
+    return (
+      <div className="mbg" onClick={() => setAboutModalOpen(false)}>
+        <div className="mbox about-box" onClick={e => e.stopPropagation()}>
+          <h3>About</h3>
+          <p className="about-updated">Last updated: July 2026</p>
+          <p className="about-body">
+            Berkshire Archive (berkshire-archive.com) is a non-commercial, educational
+            personal project that helps students and individual investors study Berkshire
+            Hathaway's annual shareholder meetings through transcription, indexing, and
+            explanatory footnotes. The site carries no advertising and generates no revenue.
+          </p>
+          <div className="about-lbl">Rights Holders</div>
+          <p className="about-body">
+            Annual meeting videos and transcripts are digitized and hosted by CNBC
+            (Warren Buffett Archive, 1994–2019), © CNBC. Spoken remarks are © their
+            respective speakers. All rights in the material referenced here belong to
+            their respective owners.
+          </p>
+          <div className="about-lbl">Takedown Requests</div>
+          <p className="about-body">
+            This site respects the rights of all copyright holders. If you hold rights to
+            material referenced here and believe this use exceeds fair use, please contact
+            me at the address below — I will respond promptly and remove it upon request.
+          </p>
+          <p className="report-contact">
+            Contact: <a href="mailto:springlock233@gmail.com">springlock233@gmail.com</a>
+          </p>
+          <div className="mbox-acts">
+            <button className="btn p" onClick={() => setAboutModalOpen(false)}>Close</button>
           </div>
         </div>
       </div>
@@ -1916,7 +1981,10 @@ ${items.map(({ year, seg }) => `
     return (
       <footer className="site-footer">
         <button className="site-footer-btn" onClick={() => setReportModalOpen(true)}>
-          Berkshire Letters Archive
+          Berkshire Meeting Archive
+        </button>
+        <button className="site-footer-btn site-footer-about" onClick={() => setAboutModalOpen(true)}>
+          About
         </button>
       </footer>
     )
@@ -1948,6 +2016,7 @@ ${items.map(({ year, seg }) => `
           {addYearModalOpen && AddYearModal()}
           {editingSegment && EditSegmentModal()}
           {reportModalOpen && ReportModal()}
+          {aboutModalOpen && AboutModal()}
           {printJob && PrintView()}
         </>
       )}
