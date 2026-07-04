@@ -306,14 +306,16 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 
 .site-footer { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 28px 40px; border-top: 1px solid var(--border); }
 .site-footer-about { font-size: 9px; color: var(--fg5); }
-.about-box { width: 480px; max-height: 84vh; overflow-y: auto; }
+.about-box { width: 480px; max-height: 84vh; overflow-y: auto; position: relative; }
+.about-lang { position: absolute; top: 26px; right: 26px; display: flex; gap: 4px; }
+.about-body.about-zh { font-family: 'Noto Serif TC', 'Noto Serif SC', serif; line-height: 1.9; }
 .about-updated { font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg5); margin: -8px 0 16px; }
 .about-lbl { font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg4); margin: 18px 0 6px; }
 .about-body { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 300; line-height: 1.75; color: var(--fg2); margin: 0; }
 .report-contact { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--fg4); border-top: 1px solid var(--border); padding-top: 14px; margin: 18px 0 0; }
 .report-contact a { color: var(--fg3); }
 .report-contact a:hover { color: var(--fg); }
-.rd-attrib { text-align: center; padding: 26px 0 0; margin-top: 8px; border-top: 1px solid var(--border); font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.05em; line-height: 2; color: var(--fg5); text-transform: uppercase; }
+.rd-attrib { text-align: center; padding: 26px 0 0; margin-top: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.05em; line-height: 2; color: var(--fg5); text-transform: uppercase; }
 .site-footer-btn { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.06em; background: none; border: none; color: var(--fg4); cursor: pointer; text-transform: uppercase; }
 .site-footer-btn:hover { color: var(--fg); }
 .scroll-top { position: fixed; bottom: 28px; right: 22px; width: 38px; height: 38px; border-radius: 50%; background: var(--inv-bg); color: var(--inv-fg); border: none; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 12px rgba(0,0,0,0.18); opacity: 0.82; z-index: 90; }
@@ -352,9 +354,11 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 .book-nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
 .book-nav-info { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--fg4); text-align: center; }
 
-.pnav { display: flex; align-items: center; justify-content: space-between; padding: 28px 0 0; border-top: 1px solid var(--border); margin-top: 32px; }
+.pnav { display: flex; align-items: center; justify-content: space-between; padding: 28px 0 0; margin-top: 32px; }
 .pnav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; padding: 9px 0; border: none; background: none; color: var(--fg4); cursor: pointer; letter-spacing: 0.04em; transition: color 0.15s; }
 .pnav-btn:hover:not(:disabled) { color: var(--fg); }
+.turn-icon { font-size: 26px; line-height: 1; padding: 4px 10px; display: inline-block; }
+.turn-icon.flip { transform: scaleX(-1); }
 .pnav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
 .pnav-info { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--fg4); }
 
@@ -463,6 +467,7 @@ export default function App() {
   const [addYearModalOpen, setAddYearModalOpen] = useState(false)
   const [reportModalOpen, setReportModalOpen] = useState(false)
   const [aboutModalOpen, setAboutModalOpen] = useState(false)
+  const [aboutLang, setAboutLang] = useState('en')
   const [showScrollTop, setShowScrollTop] = useState(false)
   const [editingSegment, setEditingSegment] = useState(null)
   const [readerTab, setReaderTab] = useState('transcript')
@@ -1328,9 +1333,9 @@ ${items.map(({ year, seg }) => `
           {pageSegments.map((seg, i) => renderSegment(seg, allSegs.indexOf(seg), allSegs))}
         </div>
         <div className="pnav">
-          <button className="pnav-btn" disabled={readerPage === 0} onClick={prevPage}>← Previous</button>
+          <button className="pnav-btn turn-icon flip" title="Previous page" disabled={readerPage === 0} onClick={prevPage}>➺</button>
           <span className="pnav-info">Page {readerPage + 1} of {totalReaderPages}</span>
-          <button className="pnav-btn" disabled={readerPage >= totalReaderPages - 1} onClick={nextPage}>Next →</button>
+          <button className="pnav-btn turn-icon" title="Next page" disabled={readerPage >= totalReaderPages - 1} onClick={nextPage}>➺</button>
         </div>
         {YearNav()}
         {ReaderAttribution()}
@@ -1374,11 +1379,11 @@ ${items.map(({ year, seg }) => `
             </div>
           </div>
           <div className="book-nav">
-            <button className="book-nav-btn" disabled={readerPage === 0} onClick={prevPage}>← Previous Spread</button>
+            <button className="book-nav-btn turn-icon flip" title="Previous spread" disabled={readerPage === 0} onClick={prevPage}>➺</button>
             <div className="book-nav-info">
               {readerPage + 1} / {totalReaderPages}
             </div>
-            <button className="book-nav-btn" disabled={readerPage >= totalReaderPages - 1} onClick={nextPage}>Next Spread →</button>
+            <button className="book-nav-btn turn-icon" title="Next spread" disabled={readerPage >= totalReaderPages - 1} onClick={nextPage}>➺</button>
           </div>
         </div>
         <div style={{ maxWidth: 'var(--rd-max, 700px)', margin: '0 auto', padding: '0 40px' }}>
@@ -1942,35 +1947,63 @@ ${items.map(({ year, seg }) => `
   }
 
   function AboutModal() {
+    const zh = aboutLang === 'zh'
     return (
       <div className="mbg" onClick={() => setAboutModalOpen(false)}>
         <div className="mbox about-box" onClick={e => e.stopPropagation()}>
-          <h3>About</h3>
-          <p className="about-updated">Last updated: July 2026</p>
-          <p className="about-body">
-            Berkshire Archive (berkshire-archive.com) is a non-commercial, educational
-            personal project that helps students and individual investors study Berkshire
-            Hathaway's annual shareholder meetings through transcription, indexing, and
-            explanatory footnotes. The site carries no advertising and generates no revenue.
-          </p>
-          <div className="about-lbl">Rights Holders</div>
-          <p className="about-body">
-            Annual meeting videos and transcripts are digitized and hosted by CNBC
-            (Warren Buffett Archive, 1994–2019), © CNBC. Spoken remarks are © their
-            respective speakers. All rights in the material referenced here belong to
-            their respective owners.
-          </p>
-          <div className="about-lbl">Takedown Requests</div>
-          <p className="about-body">
-            This site respects the rights of all copyright holders. If you hold rights to
-            material referenced here and believe this use exceeds fair use, please contact
-            me at the address below — I will respond promptly and remove it upon request.
-          </p>
+          <div className="about-lang">
+            <button className={`sp-btn${!zh ? ' on' : ''}`} onClick={() => setAboutLang('en')}>EN</button>
+            <button className={`sp-btn${zh ? ' on' : ''}`} onClick={() => setAboutLang('zh')}>繁</button>
+          </div>
+          <h3>{zh ? '關於本站' : 'About'}</h3>
+          <p className="about-updated">{zh ? '最後更新：2026年7月' : 'Last updated: July 2026'}</p>
+          {zh ? (
+            <>
+              <p className="about-body about-zh">
+                Berkshire Archive（berkshire-archive.com）是一個非商業性的教育型個人專案，
+                旨在協助學生與個人投資者透過逐字稿、索引與註解，研究波克夏・海瑟威歷年股東大會。
+                本網站不含任何廣告，亦不產生任何收益。
+              </p>
+              <div className="about-lbl">版權聲明</div>
+              <p className="about-body about-zh">
+                歷年股東大會影片與文字紀錄由 CNBC 數位化並託管（Warren Buffett Archive，1994–2019），
+                © CNBC。發言內容之版權歸各發言人所有。本站所引用素材之一切權利，均屬原權利人所有。
+              </p>
+              <div className="about-lbl">下架請求</div>
+              <p className="about-body about-zh">
+                本網站尊重所有版權持有者的權利。若您持有本站所引用素材之相關權利，
+                並認為本站之使用超出合理使用範圍，請透過下方電子郵件與我聯繫，
+                我將儘速回覆並依要求移除相關內容。
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="about-body">
+                Berkshire Archive (berkshire-archive.com) is a non-commercial, educational
+                personal project that helps students and individual investors study Berkshire
+                Hathaway's annual shareholder meetings through transcription, indexing, and
+                explanatory footnotes. The site carries no advertising and generates no revenue.
+              </p>
+              <div className="about-lbl">Rights Holders</div>
+              <p className="about-body">
+                Annual meeting videos and transcripts are digitized and hosted by CNBC
+                (Warren Buffett Archive, 1994–2019), © CNBC. Spoken remarks are © their
+                respective speakers. All rights in the material referenced here belong to
+                their respective owners.
+              </p>
+              <div className="about-lbl">Takedown Requests</div>
+              <p className="about-body">
+                This site respects the rights of all copyright holders. If you hold rights to
+                material referenced here and believe this use exceeds fair use, please contact
+                me at the address below — I will respond promptly and remove it upon request.
+              </p>
+            </>
+          )}
           <p className="report-contact">
-            Contact: <a href="mailto:springlock233@gmail.com">springlock233@gmail.com</a>
+            {zh ? '聯絡方式：' : 'Contact: '}<a href="mailto:springlock233@gmail.com">springlock233@gmail.com</a>
           </p>
           <div className="mbox-acts">
-            <button className="btn p" onClick={() => setAboutModalOpen(false)}>Close</button>
+            <button className="btn p" onClick={() => setAboutModalOpen(false)}>{zh ? '關閉' : 'Close'}</button>
           </div>
         </div>
       </div>
@@ -1983,7 +2016,7 @@ ${items.map(({ year, seg }) => `
         <button className="site-footer-btn" onClick={() => setReportModalOpen(true)}>
           Berkshire Meeting Archive
         </button>
-        <button className="site-footer-btn site-footer-about" onClick={() => setAboutModalOpen(true)}>
+        <button className="site-footer-btn site-footer-about" onClick={() => { setAboutLang(chineseMode === 'trad' ? 'zh' : 'en'); setAboutModalOpen(true) }}>
           About
         </button>
       </footer>
