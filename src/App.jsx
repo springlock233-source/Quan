@@ -5,6 +5,11 @@ function splitParas(text) {
   return (text || '').split(/\n{2,}/).map(t => t.trim()).filter(Boolean)
 }
 
+function isImageLine(line) {
+  if (!/^https?:\/\/\S+$/.test(line)) return false
+  return /\.(png|jpe?g|gif|webp|avif)(\?\S*)?$/i.test(line) || line.includes('res.cloudinary.com')
+}
+
 function videoSource(url) {
   try {
     const h = new URL(url).hostname.replace(/^www\./, '')
@@ -229,9 +234,16 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 .sg-hdg-text { font-weight: 400; letter-spacing: 0; color: var(--fg); margin: 0; line-height: 1.35; text-wrap: balance; }
 .sg-img img { width: 100%; object-fit: contain; filter: var(--cover-filter); }
 .sg-img-cap { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--fg4); letter-spacing: 0.06em; text-align: center; margin-top: 10px; }
-.hl { background: var(--hl-bg); border-bottom: 1.5px solid var(--hl-border); padding: 1px 0; }
-.note-mk { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; background: var(--fg4); color: var(--bg); font-family: 'IBM Plex Mono', monospace; font-size: 7.5px; font-weight: 500; margin-left: 2px; vertical-align: middle; position: relative; top: -1px; cursor: pointer; }
-.note-mk:hover { background: var(--fg); }
+.hl { background: rgba(255, 226, 100, 0.45); padding: 1px 0; }
+[data-theme="dark"] .hl { background: rgba(255, 214, 80, 0.17); }
+[data-theme="sepia"] .hl { background: rgba(250, 200, 60, 0.35); }
+.hl.hl-ed { cursor: pointer; }
+.an-def { border-bottom: 1px dotted var(--fg3); cursor: pointer; }
+.an-def:hover { color: var(--fg); border-bottom-color: var(--fg); }
+.an-note { border-bottom: 1px solid var(--fg3); cursor: pointer; }
+.an-note:hover { color: var(--fg); border-bottom-color: var(--fg); }
+.note-view .about-body { margin: 0 0 12px; }
+.note-view img { max-width: 100%; display: block; margin: 4px 0 14px; }
 
 .stb { position: fixed; z-index: 200; background: var(--inv-bg); padding: 3px; display: flex; gap: 1px; transform: translate(-50%, -100%); animation: ti 0.1s ease-out; }
 .stb-b { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--inv-fg); text-transform: uppercase; letter-spacing: 0.04em; padding: 7px 14px; background: none; border: none; cursor: pointer; opacity: 0.7; }
@@ -393,7 +405,7 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
   .print-img img { max-width: 100%; }
   .print-cap { font-family: 'IBM Plex Mono', monospace; font-size: 8pt; color: #666; text-align: center; margin-top: 4pt; }
   .print-root .hl { background: none !important; border-bottom: 1px solid #bbb; padding: 0; }
-  .print-root .note-mk { display: none !important; }
+  .print-root .an-def, .print-root .an-note { border-bottom: 1px dotted #999; color: inherit; }
 }
 
 @media (max-width: 768px) {
@@ -460,6 +472,7 @@ export default function App() {
   const [sortAsc, setSortAsc] = useState(false)
   const [gridPage, setGridPage] = useState(0)
   const [sidenoteText, setSidenoteText] = useState('')
+  const [noteView, setNoteView] = useState(null)
   const readerReady = useRef(false)
   const [imageForm, setImageForm] = useState({ url: '', caption: '' })
   const [imgUpload, setImgUpload] = useState({ busy: false, error: '' })
@@ -545,8 +558,25 @@ export default function App() {
     fetch('/api/reader')
       .then(r => r.ok ? r.json() : {})
       .then(data => {
-        if (data.highlights) setHighlights(data.highlights)
-        if (data.sidenotes) setSidenotes(data.sidenotes)
+        // normalize legacy formats: object highlights {text,…} and kind-less sidenotes
+        if (data.highlights) {
+          const h = {}
+          for (const [k, arr] of Object.entries(data.highlights)) {
+            const a = (arr || []).map(x => typeof x === 'string' ? x : x?.text).filter(Boolean)
+            if (a.length) h[k] = a
+          }
+          setHighlights(h)
+        }
+        if (data.sidenotes) {
+          const s = {}
+          for (const [k, arr] of Object.entries(data.sidenotes)) {
+            const a = (arr || [])
+              .filter(n => n && n.excerpt && n.note)
+              .map(n => ({ excerpt: n.excerpt, note: n.note, kind: n.kind === 'note' ? 'note' : 'def' }))
+            if (a.length) s[k] = a
+          }
+          setSidenotes(s)
+        }
         setTimeout(() => { readerReady.current = true }, 200)
       })
       .catch(() => { readerReady.current = true })
@@ -663,6 +693,7 @@ export default function App() {
         setSelToolbar(null)
         setSidenoteModal(null)
         setSidenotePopover(null)
+        setNoteView(null)
         setAddYearModalOpen(false)
         setEditingSegment(null)
         setReportModalOpen(false)
@@ -793,8 +824,9 @@ export default function App() {
     setEditorPanelOpen(false)
   }
 
-  // ── Highlights & Sidenotes ──
+  // ── Highlights & Sidenotes (created by the editor, shown to all readers) ──
   function handleMouseUp(e, segId) {
+    if (!isEditor) return
     if (e.target.closest('.stb') || e.target.closest('.note-pop')) return
     const sel = window.getSelection()
     if (!sel || sel.isCollapsed || !sel.toString().trim()) {
@@ -805,7 +837,7 @@ export default function App() {
     const rect = range.getBoundingClientRect()
     setSelToolbar({
       x: rect.left + rect.width / 2,
-      y: rect.top + window.scrollY,
+      y: rect.top,
       text: sel.toString().trim(),
       segId,
     })
@@ -821,22 +853,34 @@ export default function App() {
     window.getSelection()?.removeAllRanges()
   }
 
-  function openSidenoteModal(segId, text) {
-    setSidenoteModal({ segId, excerpt: text })
+  function removeHighlight(segId, text) {
+    setHighlights(prev => ({ ...prev, [segId]: (prev[segId] || []).filter(t => t !== text) }))
+  }
+
+  function openSidenoteModal(segId, text, kind) {
+    setSidenoteModal({ segId, excerpt: text, kind })
     setSidenoteText('')
     setSelToolbar(null)
     window.getSelection()?.removeAllRanges()
   }
 
-  function saveSidenote(segId, text, noteText) {
+  function saveSidenote(segId, text, noteText, kind) {
     if (!noteText.trim()) return
     setSidenotes(prev => {
       const arr = prev[segId] ? [...prev[segId]] : []
-      arr.push({ excerpt: text, note: noteText })
+      arr.push({ excerpt: text, note: noteText, kind })
       return { ...prev, [segId]: arr }
     })
     setSidenoteModal(null)
     setSidenoteText('')
+  }
+
+  function updateSidenote(segId, idx, noteText) {
+    setSidenotes(prev => {
+      const arr = [...(prev[segId] || [])]
+      if (arr[idx]) arr[idx] = { ...arr[idx], note: noteText }
+      return { ...prev, [segId]: arr }
+    })
   }
 
   function deleteSidenote(segId, idx) {
@@ -894,25 +938,34 @@ export default function App() {
       if (m.start < cursor) continue
       if (m.start > cursor) nodes.push(displayText.slice(cursor, m.start))
       if (m.type === 'hl') {
-        nodes.push(<span key={`hl-${m.start}`} className="hl">{displayText.slice(m.start, m.end)}</span>)
+        nodes.push(
+          <span
+            key={`hl-${m.start}`}
+            className={`hl${isEditor ? ' hl-ed' : ''}`}
+            title={isEditor ? 'Click to remove highlight' : undefined}
+            onClick={isEditor ? (e) => {
+              e.stopPropagation()
+              if (window.confirm('Remove this highlight?')) removeHighlight(segId, m.text)
+            } : undefined}
+          >{displayText.slice(m.start, m.end)}</span>
+        )
       } else {
         const noteIdx = m.idx
+        const n = segNotes[noteIdx]
         nodes.push(
-          <span key={`note-${m.start}`}>
-            {displayText.slice(m.start, m.end)}
-            <span
-              className="note-mk"
-              onClick={(e) => {
-                e.stopPropagation()
+          <span
+            key={`note-${m.start}`}
+            className={n.kind === 'note' ? 'an-note' : 'an-def'}
+            onClick={(e) => {
+              e.stopPropagation()
+              if (n.kind === 'note') {
+                setNoteView({ segId, idx: noteIdx, editing: false, draft: n.note })
+              } else {
                 const rect = e.currentTarget.getBoundingClientRect()
-                setSidenotePopover({
-                  segId, idx: noteIdx,
-                  note: segNotes[noteIdx].note,
-                  x: rect.left, y: rect.bottom + window.scrollY + 6,
-                })
-              }}
-            >{noteIdx + 1}</span>
-          </span>
+                setSidenotePopover({ segId, idx: noteIdx, note: n.note, x: rect.left, y: rect.bottom + 6 })
+              }
+            }}
+          >{displayText.slice(m.start, m.end)}</span>
         )
       }
       cursor = m.end
@@ -1013,24 +1066,40 @@ export default function App() {
     setYears(prev => prev.map(y => y.year === currentYear ? { ...y, [field]: value } : y))
   }
 
-  async function uploadImageFile(file) {
+  async function cloudinaryUpload(file) {
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('upload_preset', CLOUDINARY_PRESET)
+    const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: 'POST', body: fd })
+    const data = await r.json()
+    if (!data.secure_url) throw new Error(data.error?.message || 'Upload failed')
+    return data.secure_url
+  }
+
+  async function uploadWith(file, apply) {
     if (!file) return
     setImgUpload({ busy: true, error: '' })
     try {
-      const fd = new FormData()
-      fd.append('file', file)
-      fd.append('upload_preset', CLOUDINARY_PRESET)
-      const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: 'POST', body: fd })
-      const data = await r.json()
-      if (data.secure_url) {
-        setImageForm(f => ({ ...f, url: data.secure_url }))
-        setImgUpload({ busy: false, error: '' })
-      } else {
-        setImgUpload({ busy: false, error: data.error?.message || 'Upload failed' })
-      }
-    } catch {
-      setImgUpload({ busy: false, error: 'Upload failed — check connection' })
+      const url = await cloudinaryUpload(file)
+      apply(url)
+      setImgUpload({ busy: false, error: '' })
+    } catch (e) {
+      setImgUpload({ busy: false, error: e.message || 'Upload failed — check connection' })
     }
+  }
+
+  const appendUrl = (text, url) => (text ? text.replace(/\s*$/, '') + '\n\n' : '') + url + '\n\n'
+
+  function uploadImageFile(file) {
+    uploadWith(file, url => setImageForm(f => ({ ...f, url })))
+  }
+
+  function uploadNoteImage(file) {
+    uploadWith(file, url => setSidenoteText(t => appendUrl(t, url)))
+  }
+
+  function uploadNoteViewImage(file) {
+    uploadWith(file, url => setNoteView(v => v ? { ...v, draft: appendUrl(v.draft, url) } : v))
   }
 
   function addSegment(type) {
@@ -1333,9 +1402,9 @@ ${items.map(({ year, seg }) => `
           {pageSegments.map((seg, i) => renderSegment(seg, allSegs.indexOf(seg), allSegs))}
         </div>
         <div className="pnav">
-          <button className="pnav-btn turn-icon flip" title="Previous page" disabled={readerPage === 0} onClick={prevPage}>➺</button>
+          <button className="pnav-btn turn-icon" title="Previous page" disabled={readerPage === 0} onClick={prevPage}>➺</button>
           <span className="pnav-info">Page {readerPage + 1} of {totalReaderPages}</span>
-          <button className="pnav-btn turn-icon" title="Next page" disabled={readerPage >= totalReaderPages - 1} onClick={nextPage}>➺</button>
+          <button className="pnav-btn turn-icon flip" title="Next page" disabled={readerPage >= totalReaderPages - 1} onClick={nextPage}>➺</button>
         </div>
         {YearNav()}
         {ReaderAttribution()}
@@ -1379,11 +1448,11 @@ ${items.map(({ year, seg }) => `
             </div>
           </div>
           <div className="book-nav">
-            <button className="book-nav-btn turn-icon flip" title="Previous spread" disabled={readerPage === 0} onClick={prevPage}>➺</button>
+            <button className="book-nav-btn turn-icon" title="Previous spread" disabled={readerPage === 0} onClick={prevPage}>➺</button>
             <div className="book-nav-info">
               {readerPage + 1} / {totalReaderPages}
             </div>
-            <button className="book-nav-btn turn-icon" title="Next spread" disabled={readerPage >= totalReaderPages - 1} onClick={nextPage}>➺</button>
+            <button className="book-nav-btn turn-icon flip" title="Next spread" disabled={readerPage >= totalReaderPages - 1} onClick={nextPage}>➺</button>
           </div>
         </div>
         <div style={{ maxWidth: 'var(--rd-max, 700px)', margin: '0 auto', padding: '0 40px' }}>
@@ -1806,11 +1875,12 @@ ${items.map(({ year, seg }) => `
     return (
       <div
         className="stb"
-        style={{ left: selToolbar.x, top: selToolbar.y + window.scrollY }}
+        style={{ left: selToolbar.x, top: selToolbar.y }}
         onMouseDown={e => e.preventDefault()}
       >
         <button className="stb-b" onClick={() => addHighlight(selToolbar.segId, selToolbar.text)}>Highlight</button>
-        <button className="stb-b" onClick={() => openSidenoteModal(selToolbar.segId, selToolbar.text)}>Note</button>
+        <button className="stb-b" onClick={() => openSidenoteModal(selToolbar.segId, selToolbar.text, 'def')}>Define</button>
+        <button className="stb-b" onClick={() => openSidenoteModal(selToolbar.segId, selToolbar.text, 'note')}>Note</button>
         <button className="stb-b" onClick={() => setSelToolbar(null)}>✕</button>
       </div>
     )
@@ -1818,21 +1888,37 @@ ${items.map(({ year, seg }) => `
 
   function SidenoteModal() {
     if (!sidenoteModal) return null
+    const isNote = sidenoteModal.kind === 'note'
     return (
       <div className="mbg" onClick={() => setSidenoteModal(null)}>
-        <div className="mbox" onClick={e => e.stopPropagation()}>
-          <h3>Add Note</h3>
-          <div className="mbox-exc">"{sidenoteModal.excerpt}"</div>
+        <div className={`mbox${isNote ? ' about-box' : ''}`} onClick={e => e.stopPropagation()}>
+          <h3>{isNote ? 'Add Note' : 'Add Definition'}</h3>
+          <div className="mbox-exc">"{sidenoteModal.excerpt.slice(0, 160)}{sidenoteModal.excerpt.length > 160 ? '…' : ''}"</div>
           <textarea
             className="mta"
-            placeholder="Your note…"
+            style={isNote ? { minHeight: 220 } : undefined}
+            placeholder={isNote ? 'Long note… blank line between paragraphs; paste an image URL on its own line to embed it' : 'Short definition…'}
             value={sidenoteText}
             onChange={e => setSidenoteText(e.target.value)}
             autoFocus
           />
+          {isNote && (
+            <div style={{ marginTop: 10 }}>
+              <input
+                type="file"
+                accept="image/*"
+                disabled={imgUpload.busy}
+                onChange={e => { uploadNoteImage(e.target.files?.[0]); e.target.value = '' }}
+              />
+              {imgUpload.busy && <div className="ep-section-lbl" style={{ marginTop: 6, marginBottom: 0 }}>Uploading…</div>}
+              {imgUpload.error && <div className="ep-err" style={{ marginTop: 6, marginBottom: 0 }}>{imgUpload.error}</div>}
+            </div>
+          )}
           <div className="mbox-acts">
             <button className="btn" onClick={() => setSidenoteModal(null)}>Cancel</button>
-            <button className="btn p" onClick={() => saveSidenote(sidenoteModal.segId, sidenoteModal.excerpt, sidenoteText)}>Save Note</button>
+            <button className="btn p" onClick={() => saveSidenote(sidenoteModal.segId, sidenoteModal.excerpt, sidenoteText, sidenoteModal.kind)}>
+              {isNote ? 'Save Note' : 'Save Definition'}
+            </button>
           </div>
         </div>
       </div>
@@ -1845,14 +1931,70 @@ ${items.map(({ year, seg }) => `
     return (
       <div
         className="note-pop"
-        style={{ left: Math.min(x, window.innerWidth - 310), top: y }}
+        style={{ left: Math.min(x, window.innerWidth - 310), top: Math.min(y, window.innerHeight - 200) }}
       >
         <div className="note-pop-hd">
-          <span>Note {idx + 1}</span>
+          <span>Definition</span>
           <button onClick={() => setSidenotePopover(null)}>✕</button>
         </div>
         <div className="note-pop-body">{note}</div>
-        <button className="note-pop-del" onClick={() => deleteSidenote(segId, idx)}>Delete note</button>
+        {isEditor && (
+          <button className="note-pop-del" onClick={() => deleteSidenote(segId, idx)}>Delete definition</button>
+        )}
+      </div>
+    )
+  }
+
+  function NoteViewModal() {
+    if (!noteView) return null
+    const n = sidenotes[noteView.segId]?.[noteView.idx]
+    if (!n) return null
+    return (
+      <div className="mbg" onClick={() => setNoteView(null)}>
+        <div className="mbox about-box note-view" onClick={e => e.stopPropagation()}>
+          <h3>Note</h3>
+          {noteView.editing ? (
+            <>
+              <textarea
+                className="mta"
+                style={{ minHeight: 240 }}
+                value={noteView.draft}
+                onChange={e => setNoteView(v => ({ ...v, draft: e.target.value }))}
+                autoFocus
+              />
+              <div style={{ marginTop: 10 }}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={imgUpload.busy}
+                  onChange={e => { uploadNoteViewImage(e.target.files?.[0]); e.target.value = '' }}
+                />
+                {imgUpload.busy && <div className="ep-section-lbl" style={{ marginTop: 6, marginBottom: 0 }}>Uploading…</div>}
+                {imgUpload.error && <div className="ep-err" style={{ marginTop: 6, marginBottom: 0 }}>{imgUpload.error}</div>}
+              </div>
+              <div className="mbox-acts">
+                <button className="btn" onClick={() => setNoteView(v => ({ ...v, editing: false, draft: n.note }))}>Cancel</button>
+                <button className="btn p" onClick={() => { updateSidenote(noteView.segId, noteView.idx, noteView.draft); setNoteView(v => ({ ...v, editing: false })) }}>Save</button>
+              </div>
+            </>
+          ) : (
+            <>
+              {splitParas(n.note).map((p, i) => isImageLine(p)
+                ? <img key={i} src={p} alt="" loading="lazy" />
+                : <p key={i} className="about-body">{p}</p>
+              )}
+              <div className="mbox-acts">
+                {isEditor && (
+                  <button className="btn" onClick={() => { if (window.confirm('Delete this note?')) { deleteSidenote(noteView.segId, noteView.idx); setNoteView(null) } }}>Delete</button>
+                )}
+                {isEditor && (
+                  <button className="btn" onClick={() => setNoteView(v => ({ ...v, editing: true, draft: n.note }))}>Edit</button>
+                )}
+                <button className="btn p" onClick={() => setNoteView(null)}>Close</button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     )
   }
@@ -1961,7 +2103,7 @@ ${items.map(({ year, seg }) => `
             <>
               <p className="about-body about-zh">
                 Berkshire Archive（berkshire-archive.com）是一個非商業性的教育型個人專案，
-                旨在協助學生與個人投資者透過逐字稿、索引與註解，研究波克夏・海瑟威歷年股東大會。
+                旨在協助學生與個人投資者透過逐字稿、索引與註解，研究伯克希爾・哈撒韋歷年股東大會。
                 本網站不含任何廣告，亦不產生任何收益。
               </p>
               <div className="about-lbl">版權聲明</div>
@@ -2046,6 +2188,7 @@ ${items.map(({ year, seg }) => `
           {selToolbar && SelectionToolbar()}
           {sidenoteModal && SidenoteModal()}
           {sidenotePopover && SidenotePopover()}
+          {noteView && NoteViewModal()}
           {addYearModalOpen && AddYearModal()}
           {editingSegment && EditSegmentModal()}
           {reportModalOpen && ReportModal()}
