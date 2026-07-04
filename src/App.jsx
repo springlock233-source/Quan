@@ -1,5 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
+// ─── Text helpers ─────────────────────────────────────────────────────────────
+function splitParas(text) {
+  return (text || '').split(/\n{2,}/).map(t => t.trim()).filter(Boolean)
+}
+
 // ─── Avatar helpers ───────────────────────────────────────────────────────────
 function avatarBg(speaker) {
   if (speaker === 'Warren Buffett') return '#0d2040'
@@ -158,7 +163,6 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 .rh-in { max-width: var(--rd-max, 700px); margin: 0 auto; }
 .rh-y { font-family: 'Cardo', Georgia, serif; font-size: 72px; font-weight: 400; letter-spacing: -0.03em; line-height: 1; }
 .rh-s { font-family: 'Cardo', Georgia, serif; font-size: 20px; font-style: italic; color: var(--fg3); margin-top: 4px; }
-.vr { padding: 14px 0 0; }
 .vr-link { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg4); text-decoration: none; transition: color 0.15s; }
 .vr-link:hover { color: var(--fg); }
 .qa-ix { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 20px 0 0; }
@@ -166,8 +170,9 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 .qa-ix-chip { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.04em; padding: 5px 9px; border: 1px solid var(--border); background: none; color: var(--fg4); cursor: pointer; transition: color 0.15s, border-color 0.15s; }
 .qa-ix-chip:hover { color: var(--fg); border-color: var(--border2); }
 .qa-ix-chip.on { background: var(--inv-bg); color: var(--inv-fg); border-color: var(--inv-bg); }
-.bbk { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; color: var(--fg4); background: none; border: none; cursor: pointer; padding: 20px 0; display: block; letter-spacing: 0.04em; }
+.bbk { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; color: var(--fg4); background: none; border: none; cursor: pointer; padding: 0; letter-spacing: 0.04em; }
 .bbk:hover { color: var(--fg); }
+.rd-actions { display: flex; align-items: center; gap: 28px; padding: 20px 0 4px; }
 .reader-tabs { display: flex; border-bottom: 1px solid var(--border); margin: 20px 0 0; }
 .reader-tab { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; padding: 10px 16px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--fg4); cursor: pointer; letter-spacing: 0.04em; }
 .reader-tab.on { color: var(--fg); border-bottom-color: var(--fg); }
@@ -200,6 +205,9 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
 .sg-en.ed { cursor: text; }
 .sg-zh { font-family: 'Noto Serif TC', 'Noto Serif SC', serif; line-height: calc(var(--rd-lh, 1.75) + 0.15); color: var(--fg4); margin-top: 14px; padding-top: 14px; position: relative; white-space: pre-wrap; overflow-wrap: break-word; margin-bottom: 0; max-width: var(--rd-measure, 36rem); }
 .sg-zh::before { content: ''; position: absolute; top: 0; left: 0; width: 36px; border-top: 1px solid var(--border2); }
+.sg-en + .sg-en { margin-top: 0.65em; }
+.sg-zh + .sg-zh { margin-top: 0.65em; padding-top: 0; }
+.sg-zh + .sg-zh::before { display: none; }
 .sg-hdg { border-bottom: none; margin-top: 44px; margin-bottom: 24px; padding-bottom: 0; }
 .sg-hdg:first-child { margin-top: 0; }
 .sg-hdg-inner { border-left: 2px solid var(--border2); padding-left: 14px; }
@@ -352,6 +360,8 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px s
   .print-speaker { font-family: 'IBM Plex Mono', monospace; font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.08em; color: #666; margin-bottom: 5pt; break-after: avoid; page-break-after: avoid; }
   .print-en { font-size: 11.5pt; line-height: 1.6; color: #111; margin: 0; white-space: pre-wrap; overflow-wrap: break-word; orphans: 3; widows: 3; }
   .print-zh { font-family: 'Noto Serif TC', 'Noto Serif SC', serif; font-size: 10.5pt; line-height: 1.7; color: #444; margin: 6pt 0 0; white-space: pre-wrap; overflow-wrap: break-word; orphans: 3; widows: 3; }
+  .print-en + .print-en { margin-top: 5pt; }
+  .print-zh + .print-zh { margin-top: 4pt; }
   .print-img img { max-width: 100%; }
   .print-cap { font-family: 'IBM Plex Mono', monospace; font-size: 8pt; color: #666; text-align: center; margin-top: 4pt; }
   .print-root .hl { background: none !important; border-bottom: 1px solid #bbb; padding: 0; }
@@ -426,6 +436,7 @@ export default function App() {
   const [showScrollTop, setShowScrollTop] = useState(false)
   const [editingSegment, setEditingSegment] = useState(null)
   const [readerTab, setReaderTab] = useState('transcript')
+  const [qaSel, setQaSel] = useState(0)
   const [newYearForm, setNewYearForm] = useState({ year: '', title: '' })
   const [readingMode, setReadingMode] = useState(() => localStorage.getItem('bk_mode') || 'scroll')
   const [readerPage, setReaderPage] = useState(0)
@@ -446,24 +457,29 @@ export default function App() {
   const sortedYearNums = [...years].map(y => y.year).sort((a, b) => a - b)
   const currentYearIdx = sortedYearNums.indexOf(currentYear)
 
+  const qaSegments = (currentYearData?.segments || []).filter(s => s.isQA)
+  const qaIndex = qaSegments.filter(s => s.type === 'heading')
+
+  // Q&A tab shows one question at a time: a QA heading starts a question,
+  // the QA segments that follow belong to it until the next QA heading
+  let qaGroup = qaSegments
+  if (qaIndex.length > 0) {
+    const sel = Math.min(qaSel, qaIndex.length - 1)
+    const start = sel === 0 ? 0 : qaSegments.findIndex(s => s.id === qaIndex[sel].id)
+    const end = sel + 1 < qaIndex.length
+      ? qaSegments.findIndex(s => s.id === qaIndex[sel + 1].id)
+      : qaSegments.length
+    qaGroup = qaSegments.slice(start, end)
+  }
+
   const currentSegments = readerTab === 'transcript'
     ? (currentYearData?.segments || [])
-    : (currentYearData?.segments || []).filter(s => s.isQA)
+    : qaGroup
 
   const totalReaderPages = Math.max(1, Math.ceil(currentSegments.length / segmentsPerPage))
   const pageSegments = currentSegments.slice(readerPage * segmentsPerPage, (readerPage + 1) * segmentsPerPage)
   const leftPageSegs = pageSegments.slice(0, Math.ceil(pageSegments.length / 2))
   const rightPageSegs = pageSegments.slice(Math.ceil(pageSegments.length / 2))
-
-  const qaIndex = (currentYearData?.segments || []).filter(s => s.isQA && s.type === 'heading')
-
-  function getSegmentPage(segId) {
-    const segs = readerTab === 'transcript'
-      ? (currentYearData?.segments || [])
-      : (currentYearData?.segments || []).filter(s => s.isQA)
-    const idx = segs.findIndex(s => s.id === segId)
-    return idx === -1 ? 0 : Math.floor(idx / segmentsPerPage)
-  }
 
   // ── Effects ──
   useEffect(() => {
@@ -673,9 +689,10 @@ export default function App() {
     window.scrollTo(0, 0)
   }, [readerPage])
 
-  // Reset reader page when tab or year changes
+  // Reset reader page and question selection when tab or year changes
   useEffect(() => {
     setReaderPage(0)
+    setQaSel(0)
   }, [readerTab, currentYear])
 
   // ── Navigation ──
@@ -929,14 +946,16 @@ export default function App() {
             {isBookmarked ? '★' : '☆'}
           </button>
         </div>
-        <p className="sg-en" style={fontStyle}>
-          {renderText(seg.en, seg.id, highlights, sidenotes)}
-        </p>
-        {seg.zh && chineseMode !== 'none' && (
-          <p className="sg-zh" style={{ fontSize: fontSize - 1 }}>
-            {renderText(seg.zh, seg.id, highlights, sidenotes)}
+        {splitParas(seg.en).map((t, pi) => (
+          <p key={pi} className="sg-en" style={fontStyle}>
+            {renderText(t, seg.id, highlights, sidenotes)}
           </p>
-        )}
+        ))}
+        {seg.zh && chineseMode !== 'none' && splitParas(seg.zh).map((t, pi) => (
+          <p key={pi} className="sg-zh" style={{ fontSize: fontSize - 1 }}>
+            {renderText(t, seg.id, highlights, sidenotes)}
+          </p>
+        ))}
       </div>
     )
   }
@@ -1071,7 +1090,6 @@ ${items.map(({ year, seg }) => `
   }
 
   function Nav() {
-    const chLabel = chineseMode === 'trad' ? '繁中' : '中'
     const saveLabel = saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? '✓ Saved' : saveStatus === 'error' ? 'Err' : 'Save'
     return (
       <nav className="nav" ref={navRef}>
@@ -1086,8 +1104,8 @@ ${items.map(({ year, seg }) => `
             ★
           </button>
           {page === 'reader' && (
-            <button className="nb" onClick={() => setChineseMode(m => m === 'none' ? 'trad' : 'none')}>
-              {chLabel}
+            <button className={`nb${chineseMode === 'trad' ? ' on' : ''}`} onClick={() => setChineseMode(m => m === 'none' ? 'trad' : 'none')}>
+              中
             </button>
           )}
           <button className={`nb${showSettings ? ' on' : ''}`} onClick={() => { setShowSettings(v => !v); setEditorPanelOpen(false) }}>
@@ -1196,12 +1214,18 @@ ${items.map(({ year, seg }) => `
             </div>
           </div>
         )}
-        {yd?.videoUrl && (
-          <div className="vr">
-            <a className="vr-link" href={yd.videoUrl} target="_blank" rel="noopener noreferrer">▶&nbsp;&nbsp;Watch the meeting</a>
-          </div>
-        )}
       </>
+    )
+  }
+
+  function ReaderActions() {
+    return (
+      <div className="rd-actions">
+        <button className="bbk" onClick={goToGrid}>← All Years</button>
+        {currentYearData?.videoUrl && (
+          <a className="vr-link" href={currentYearData.videoUrl} target="_blank" rel="noopener noreferrer">▶&nbsp;&nbsp;Watch the meeting</a>
+        )}
+      </div>
     )
   }
 
@@ -1210,8 +1234,8 @@ ${items.map(({ year, seg }) => `
     const allSegs = currentYearData?.segments || []
     return (
       <div className="rd">
-        <button className="bbk" onClick={goToGrid}>← All Years</button>
         {ReaderHero()}
+        {ReaderActions()}
         <div className="reader-tabs">
           <button className={`reader-tab${readerTab === 'transcript' ? ' on' : ''}`} onClick={() => setReaderTab('transcript')}>Transcript</button>
           <button className={`reader-tab${readerTab === 'qa' ? ' on' : ''}`} onClick={() => setReaderTab('qa')}>Q&A</button>
@@ -1240,8 +1264,8 @@ ${items.map(({ year, seg }) => `
     return (
       <div className="rd" style={{ maxWidth: '100%', padding: 0 }}>
         <div style={{ maxWidth: 'var(--rd-max, 700px)', margin: '0 auto', padding: '0 40px' }}>
-          <button className="bbk" onClick={goToGrid}>← All Years</button>
           {ReaderHero()}
+          {ReaderActions()}
           <div className="reader-tabs">
             <button className={`reader-tab${readerTab === 'transcript' ? ' on' : ''}`} onClick={() => setReaderTab('transcript')}>Transcript</button>
             <button className={`reader-tab${readerTab === 'qa' ? ' on' : ''}`} onClick={() => setReaderTab('qa')}>Q&A</button>
@@ -1381,14 +1405,16 @@ ${items.map(({ year, seg }) => `
       return (
         <div key={seg.id} className="print-seg">
           <div className="print-speaker">{seg.speaker || 'Speaker'}</div>
-          <p className="print-en" style={{ fontFamily }}>
-            {renderText(seg.en, seg.id, highlights, sidenotes)}
-          </p>
-          {seg.zh && chineseMode !== 'none' && (
-            <p className="print-zh">
-              {renderText(seg.zh, seg.id, highlights, sidenotes)}
+          {splitParas(seg.en).map((t, pi) => (
+            <p key={pi} className="print-en" style={{ fontFamily }}>
+              {renderText(t, seg.id, highlights, sidenotes)}
             </p>
-          )}
+          ))}
+          {seg.zh && chineseMode !== 'none' && splitParas(seg.zh).map((t, pi) => (
+            <p key={pi} className="print-zh">
+              {renderText(t, seg.id, highlights, sidenotes)}
+            </p>
+          ))}
         </div>
       )
     }
@@ -1544,9 +1570,9 @@ ${items.map(({ year, seg }) => `
         {qaIndex.map((item, i) => (
           <button
             key={item.id}
-            className={`qa-ix-chip${getSegmentPage(item.id) === readerPage ? ' on' : ''}`}
+            className={`qa-ix-chip${i === Math.min(qaSel, qaIndex.length - 1) ? ' on' : ''}`}
             title={item.text}
-            onClick={() => setReaderPage(getSegmentPage(item.id))}
+            onClick={() => { setQaSel(i); setReaderPage(0) }}
           >
             Q{i + 1}
           </button>
